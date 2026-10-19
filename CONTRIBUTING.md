@@ -67,6 +67,7 @@ The scripts under `scripts/` are what CI runs besides `cargo`:
 | `scripts/sync-templates.sh [--check]` | Regenerates the `tech-briefing`, `two-person-podcast` and `offline-demo` skill templates from the examples (`--check`: fail if out of date). |
 | `scripts/check-timelines.sh <soniccraft>` | Validates every example and template with the built CLI; only environment errors (missing API keys, unavailable local providers) are tolerated. |
 | `scripts/smoke-render.sh <soniccraft>` | Renders the mock-only demo twice and checks outputs, loudness against the target, and byte-identical determinism. |
+| `scripts/smoke-container.sh <image>` | Checks a container image: `--version`, the mock demo rendered to WAV and Ogg into a mounted directory, an MCP initialize. |
 | `scripts/generate-example-assets.sh [--verify]` | Regenerates the example audio with ffmpeg (`--verify`: check the committed files with ffprobe). |
 | `scripts/third-party-licenses.py [--target T] [--no-default-features] [-o FILE]` | Writes the `THIRD-PARTY-LICENSES.txt` of a build (every crate compiled in, with the license texts it ships); CI runs it for every release target and flavour. |
 | `scripts/deny-license-hash.py FILE...` | Prints cargo-deny's hash of a license file, for the `[[licenses.clarify]]` entries in `deny.toml`. |

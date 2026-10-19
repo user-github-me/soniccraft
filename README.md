@@ -194,6 +194,20 @@ output then needs ffmpeg. Check a download with `sha256sum --check --ignore-miss
 download is quarantined; clear it with `xattr -d com.apple.quarantine soniccraft soniccraft-mcp` (curl and the
 npm launcher do not set the attribute).
 
+**Container image.** Each release is also published as
+[`ghcr.io/user-github-me/soniccraft`](https://github.com/user-github-me/soniccraft/pkgs/container/soniccraft)
+(linux/amd64 and linux/arm64, with ffmpeg for ogg, opus and m4a output):
+
+```bash
+docker run --rm -v "$PWD":/work ghcr.io/user-github-me/soniccraft render timeline.yaml
+docker run -i --rm -v "$PWD":/work ghcr.io/user-github-me/soniccraft mcp --base-dir /work   # MCP on stdio
+```
+
+Files written to the mounted directory belong to uid 1000; add `--user "$(id -u):$(id -g)"` to write them as
+yourself. Pass API keys with `-e ELEVENLABS_API_KEY` (never in the timeline). macOS `say` is not available in
+the container: use the mock voice, a cloud provider or a local server. `docker build -t soniccraft .` builds the
+same image from source.
+
 Render the demo with **zero API keys**:
 
 ```bash
@@ -326,7 +340,9 @@ says so (`missing_credentials`); if you need an `env` entry, write `"${ELEVENLAB
 
 **Without installing Rust**, through npm (Node.js 20 or newer): the [`soniccraft-mcp`](packages/soniccraft-mcp)
 package uses `soniccraft` from `PATH` when there is one; otherwise it downloads the prebuilt release for your
-platform on first use and verifies it against SHA-256 checksums pinned in the npm package.
+platform on first use and verifies it against SHA-256 checksums pinned in the package. Until it is published on
+the npm registry, run the package attached to the release instead of `soniccraft-mcp` in the commands below:
+`npx -y https://github.com/user-github-me/soniccraft/releases/download/v0.1.0/soniccraft-mcp-0.1.0.tgz`.
 
 ```bash
 claude mcp add soniccraft -- npx -y soniccraft-mcp

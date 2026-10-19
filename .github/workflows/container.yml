@@ -1,0 +1,117 @@
+name: Container image
+
+# Publishes ghcr.io/<owner>/soniccraft (linux/amd64 and linux/arm64) when a release is published. The image
+# is built from that release's Linux binaries (Dockerfile, `BINARIES=prebuilt`), so it runs exactly what the
+# release ships, and it is smoke-tested before it is pushed. Changes to the Dockerfile are checked by
+# building it from source.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Published release to package, e.g. v0.1.0
+        required: true
+  push:
+    branches: [main]
+    paths: [Dockerfile, .dockerignore, .github/workflows/container.yml]
+  pull_request:
+    paths: [Dockerfile, .dockerignore, .github/workflows/container.yml]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ inputs.tag || github.event.release.tag_name || '' }}
+  cancel-in-progress: false
+
+jobs:
+  source:
+    name: build from source (check)
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the image from source
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: soniccraft:check
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test (version, mock-only render, MCP handshake)
+        run: scripts/smoke-container.sh soniccraft:check
+
+  publish:
+    name: publish to ghcr.io
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    env:
+      TAG: ${{ inputs.tag || github.event.release.tag_name }}
+      IMAGE: ghcr.io/${{ github.repository }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TAG }}
+      - name: Download the release's Linux binaries
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for pair in amd64:x86_64-unknown-linux-gnu arm64:aarch64-unknown-linux-gnu; do
+            arch="${pair%%:*}"
+            name="soniccraft-$TAG-${pair#*:}"
+            gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir dl \
+              --pattern "$name.tar.gz" --pattern "$name.tar.gz.sha256"
+            (cd dl && sha256sum --check "$name.tar.gz.sha256")
+            tar -xzf "dl/$name.tar.gz" -C dl
+            mkdir -p "dist/linux-$arch"
+            cp "dl/$name/soniccraft" "dl/$name/soniccraft-mcp" "dist/linux-$arch/"
+          done
+      - name: Image name in lower case
+        run: echo "IMAGE=${IMAGE,,}" >>"$GITHUB_ENV"
+      - name: Tags and labels
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=semver,pattern={{version}},value=${{ env.TAG }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ env.TAG }}
+            type=raw,value=latest,enable=${{ !contains(env.TAG, '-') }}
+          labels: |
+            org.opencontainers.image.title=SonicCraft
+            org.opencontainers.image.description=Declarative multi-track audio engine for AI agents: the soniccraft CLI and MCP server, with ffmpeg
+            org.opencontainers.image.licenses=MIT OR Apache-2.0
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - name: Build the amd64 image for the smoke test
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          build-args: BINARIES=prebuilt
+          platforms: linux/amd64
+          load: true
+          tags: soniccraft:test
+      - name: Smoke test (version, mock-only render, MCP handshake)
+        run: scripts/smoke-container.sh soniccraft:test
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      - name: Build and push linux/amd64 and linux/arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          build-args: BINARIES=prebuilt
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          annotations: ${{ steps.meta.outputs.annotations }}

@@ -1,0 +1,20 @@
+# Build output, caches and local renders never go into the build context (dist/ does: the published image
+# copies a release's binaries from dist/linux-<arch>/).
+target/
+**/node_modules/
+**/.soniccraft/
+.git/
+examples/*/*.wav
+examples/*/*.mp3
+examples/*/*.flac
+examples/*/*.ogg
+examples/*/*.opus
+examples/*/*.m4a
+examples/*/*.vtt
+examples/*/*.srt
+examples/*/*.words.json
+examples/*/*.transcript.json
+examples/*/*.manifest.json
+examples/*/*.preview.html
+examples/*/*.stems/
+.DS_Store

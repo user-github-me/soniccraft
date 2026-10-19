@@ -7,10 +7,52 @@ Diagnostic codes and report fields are treated as public API.
 
 ## [Unreleased]
 
-A hardening pass over the whole engine before the first release. Entries marked **Breaking** change behaviour
-described under 0.1.0.
+## [0.1.0] - 2026-10-20
+
+First release: timeline DSL v1.0 and engine v0.1.
 
 ### Added
+
+- **Timeline DSL v1.0** (YAML 1.2 or JSON): output and mastering settings, subtitle layout, timing policy,
+  mix reference level, voice defaults, a speakers registry, provider instances, and speech, music and sfx
+  tracks with cues, pauses and clips. Values accept unit strings (`"350ms"`, `"1.5s"`, `"1m30s"`,
+  `"00:01:30.500"`, `"320k"`).
+- **Validation with agent-first diagnostics:** stable codes, `field.sub[index]` paths, line/column for YAML,
+  did-you-mean hints for unknown keys, enum values, references and providers; every problem reported at
+  once; secrets in timelines rejected.
+- **Timing:** sequential placement with pauses, absolute starts, and relative anchors (`after_cue`,
+  `with_cue`, `before_cue`, signed offsets) on cues, clips and tracks; dependency-cycle detection; a
+  sample-accurate layout engine with the speech-overlap policy (`push` by default, or `warn`, `error`,
+  `allow`) and per-cue `allow_overlap`.
+- **TTS providers:** ElevenLabs (word timestamps), OpenAI-compatible `/audio/speech` servers, Cartesia
+  (word timestamps), Kokoro via Kokoro-FastAPI (word timestamps), Piper, macOS `say`, custom commands and a
+  deterministic mock voice; content-addressed cache; concurrency limits; retries with backoff; credential
+  checks; voice listing; dry-run duration estimates in characters per second.
+- **Native DSP:** decoding, resampling, silence trimming, per-source loudness normalization, loops with
+  optional seam crossfades, fades (equal-power, linear, exponential), clip crossfades, constant-power
+  panning, sidechain and cue-driven ducking with attack, release, hold and lookahead.
+- **Mastering:** EBU R128 / BS.1770 loudness normalization with presets (`podcast` -16, `streaming` -14,
+  `broadcast` -23, `atsc` -24 LUFS) and an iterative, 4× oversampled true-peak limiter.
+- **Encoders:** WAV (16/24-bit integer, 32-bit float), MP3 (LAME, CBR; cargo feature `mp3`, on by default),
+  FLAC (16/24-bit); ogg, opus and m4a through ffmpeg; fixed-seed TPDF dither.
+- **Subtitles:** WebVTT, SRT, JSON with per-word timestamps, and a HyperFrames-compatible transcript;
+  speaker labels; caption overrides.
+- **Side files:** per-track stems, a deterministic manifest, and a self-contained HTML preview (waveform,
+  ducking envelopes, captions).
+- **CLI** `soniccraft`: `validate`, `plan` (`dry-run`), `render`, `schema`, `init`, `providers`, `voices`,
+  `cache`, `mcp`; `--json` output and exit codes 0/1/2/3.
+- **MCP server** (`soniccraft mcp`, `soniccraft-mcp`) serving both protocol eras: tools
+  `soniccraft_validate_timeline`, `soniccraft_dry_run`, `soniccraft_render`, `soniccraft_get_schema`,
+  `soniccraft_list_providers`, `soniccraft_list_voices`.
+- **Agent Skill** `skills/soniccraft` with references and five templates; Claude Code plugin and marketplace
+  manifests; Codex skill metadata.
+- **Examples** (`tech-briefing`, `two-person-podcast`, `offline-demo`) with procedurally generated,
+  royalty-free assets and the script that generates them.
+- Dual MIT OR Apache-2.0 licensing; CI on Linux and macOS.
+- A container image, `ghcr.io/user-github-me/soniccraft` (linux/amd64 and linux/arm64, with ffmpeg), published
+  from each release's Linux binaries; `docker build .` builds it from source.
+
+### Added in pre-release hardening
 
 - Release workflow: prebuilt `soniccraft` and `soniccraft-mcp` for Linux (x86_64, arm64), macOS (Apple
   silicon, Intel) and Windows (x86_64), each with and without the LGPL MP3 encoder, with `SHA256SUMS` and a
@@ -53,24 +95,24 @@ described under 0.1.0.
   `LoudnessReport.pre_encode`, working `EngineOptions.allow_command` and `confine_outputs_to`; mcp
   `ServerOptions::max_concurrent_renders`, `ALLOW_COMMAND_ENV`, `MAX_RENDERS_ENV`.
 
-### Changed
+### Behaviour settled in pre-release hardening
 
-- **Breaking:** enum spellings are exact (`Speech`, `MP3`, `equal-power` are `invalid_value` with a
+- enum spellings are exact (`Speech`, `MP3`, `equal-power` are `invalid_value` with a
   did-you-mean); duration units are lowercase and clock seconds must be below 60; bitrate strings take no
   sign or exponent; `version: "01.0"` is invalid; padded ids (`" v "`) are `invalid_id`.
-- **Breaking:** every time is at most 24 h (larger values, usually epoch milliseconds, are `invalid_value`),
+- every time is at most 24 h (larger values, usually epoch milliseconds, are `invalid_value`),
   and a timeline longer than 24 h is `timeline_too_long`; `target_lufs` must be in [-60, -5] (was
   [-70, -5]); a total length of 0 is `invalid_value`.
-- **Breaking:** a misspelled speaker (a close match of a defined speaker) is an error; voice keys inside
+- a misspelled speaker (a close match of a defined speaker) is an error; voice keys inside
   `settings` (`settings.voice`) are a `field_not_applicable` warning.
-- **Breaking:** MCP servers refuse `command` providers (and piper with its own `command`) unless started
+- MCP servers refuse `command` providers (and piper with its own `command`) unless started
   with `--allow-command`; a timeline's own `output.path` must stay inside the MCP base directory.
-- **Breaking:** API keys go only to the provider's own API host, to servers on this machine (only the
+- API keys go only to the provider's own API host, to servers on this machine (only the
   provider's own key variable), or to `SONICCRAFT_ALLOWED_HOSTS`; regional, remote and other local-network
   endpoints must be listed, and so must a local server that should get a variable named by `api_key_env`.
-- **Breaking:** command and piper cache keys include the program, its content hash, script files and the
+- command and piper cache keys include the program, its content hash, script files and the
   piper model, so those cues re-synthesize once.
-- **Breaking (library):** `soniccraft_core::Compiled` has a new field `assets` (build it with
+- `soniccraft_core::Compiled` has a new field `assets` (build it with
   `..Compiled::default()`); `DspError` has a new variant `Cancelled`; the name enums' `parse` is exact
   (case-sensitive, no trimming), so `builtin_type("Eleven-Labs")` is `None`; `Layout.total_frames` is capped
   at 24 h.
@@ -119,7 +161,7 @@ described under 0.1.0.
 - Release binaries are stripped of symbols (about 3 MB, 18% smaller).
 - `cargo run -p soniccraft-cli` runs the `soniccraft` binary.
 
-### Fixed
+### Fixed in pre-release hardening
 
 - Crashes, runaway memory or run time on huge times, NaN/infinite samples, 4 MHz sources, very large timelines
   and minified single-line documents.
@@ -131,46 +173,3 @@ described under 0.1.0.
 - Docs: the README's `.mcp.json` example no longer forwards an unset key as a literal `${VAR}`; the install
   command uses `--locked`; piper setup matches the voice lookup; `diagnostics.md` and `dsl-reference.md`
   list the right codes for `label`, `crossfade_ms` and unparsable times.
-
-## [0.1.0] - Unreleased
-
-First release: timeline DSL v1.0 and engine v0.1.
-
-### Added
-
-- **Timeline DSL v1.0** (YAML 1.2 or JSON): output and mastering settings, subtitle layout, timing policy,
-  mix reference level, voice defaults, a speakers registry, provider instances, and speech, music and sfx
-  tracks with cues, pauses and clips. Values accept unit strings (`"350ms"`, `"1.5s"`, `"1m30s"`,
-  `"00:01:30.500"`, `"320k"`).
-- **Validation with agent-first diagnostics:** stable codes, `field.sub[index]` paths, line/column for YAML,
-  did-you-mean hints for unknown keys, enum values, references and providers; every problem reported at
-  once; secrets in timelines rejected.
-- **Timing:** sequential placement with pauses, absolute starts, and relative anchors (`after_cue`,
-  `with_cue`, `before_cue`, signed offsets) on cues, clips and tracks; dependency-cycle detection; a
-  sample-accurate layout engine with the speech-overlap policy (`push` by default, or `warn`, `error`,
-  `allow`) and per-cue `allow_overlap`.
-- **TTS providers:** ElevenLabs (word timestamps), OpenAI-compatible `/audio/speech` servers, Cartesia
-  (word timestamps), Kokoro via Kokoro-FastAPI (word timestamps), Piper, macOS `say`, custom commands and a
-  deterministic mock voice; content-addressed cache; concurrency limits; retries with backoff; credential
-  checks; voice listing; dry-run duration estimates in characters per second.
-- **Native DSP:** decoding, resampling, silence trimming, per-source loudness normalization, loops with
-  optional seam crossfades, fades (equal-power, linear, exponential), clip crossfades, constant-power
-  panning, sidechain and cue-driven ducking with attack, release, hold and lookahead.
-- **Mastering:** EBU R128 / BS.1770 loudness normalization with presets (`podcast` -16, `streaming` -14,
-  `broadcast` -23, `atsc` -24 LUFS) and an iterative, 4× oversampled true-peak limiter.
-- **Encoders:** WAV (16/24-bit integer, 32-bit float), MP3 (LAME, CBR; cargo feature `mp3`, on by default),
-  FLAC (16/24-bit); ogg, opus and m4a through ffmpeg; fixed-seed TPDF dither.
-- **Subtitles:** WebVTT, SRT, JSON with per-word timestamps, and a HyperFrames-compatible transcript;
-  speaker labels; caption overrides.
-- **Side files:** per-track stems, a deterministic manifest, and a self-contained HTML preview (waveform,
-  ducking envelopes, captions).
-- **CLI** `soniccraft`: `validate`, `plan` (`dry-run`), `render`, `schema`, `init`, `providers`, `voices`,
-  `cache`, `mcp`; `--json` output and exit codes 0/1/2/3.
-- **MCP server** (`soniccraft mcp`, `soniccraft-mcp`) serving both protocol eras: tools
-  `soniccraft_validate_timeline`, `soniccraft_dry_run`, `soniccraft_render`, `soniccraft_get_schema`,
-  `soniccraft_list_providers`, `soniccraft_list_voices`.
-- **Agent Skill** `skills/soniccraft` with references and five templates; Claude Code plugin and marketplace
-  manifests; Codex skill metadata.
-- **Examples** (`tech-briefing`, `two-person-podcast`, `offline-demo`) with procedurally generated,
-  royalty-free assets and the script that generates them.
-- Dual MIT OR Apache-2.0 licensing; CI on Linux and macOS.
