@@ -220,7 +220,14 @@ fn m4a_matches_ffmpeg_decode() {
         .output()
         .unwrap();
     let theirs = decode::pcm_f32le_to_buffer(&out.stdout, 44_100, 2);
-    assert_eq!(theirs.frames(), ours.frames());
+    // ffmpeg 7 and later trim the encoder padding the edit list names; older versions (ffmpeg 6 on
+    // Ubuntu 24.04) keep up to one AAC frame of it at the end. The start must match exactly.
+    assert!(
+        theirs.frames() >= ours.frames() && theirs.frames() - ours.frames() <= 1024,
+        "ffmpeg decoded {} frames, soniccraft {}",
+        theirs.frames(),
+        ours.frames()
+    );
     let max_diff = ours.channels[0]
         .iter()
         .zip(&theirs.channels[0])

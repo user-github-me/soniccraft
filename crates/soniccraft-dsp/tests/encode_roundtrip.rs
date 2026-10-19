@@ -320,9 +320,18 @@ fn ffmpeg_formats_round_trip() {
         );
         assert_eq!((back.sample_rate, back.num_channels()), (rate, 2), "{name}");
         let expected_len = buf.frames() as u64 * u64::from(rate) / 44_100;
+        // ffmpeg's native `vorbis` (used when a build has no libvorbis, as Homebrew's) pads the end by a
+        // few ms; every other encoder here keeps the exact length.
+        let slack = if summary.encoder == "ffmpeg/vorbis" {
+            1024
+        } else {
+            2
+        };
         assert!(
-            back.frames().abs_diff(expected_len as usize) <= 2,
-            "{name}: {} frames, expected {expected_len}",
+            back.frames() + 2 >= expected_len as usize
+                && back.frames().abs_diff(expected_len as usize) <= slack,
+            "{name} ({}): {} frames, expected {expected_len}",
+            summary.encoder,
             back.frames()
         );
         let click = argmax_abs(&back.channels[0]);
@@ -427,5 +436,12 @@ fn ffmpeg_encoders_handle_awkward_file_names() {
     )
     .unwrap();
     assert_eq!(summary.bytes, std::fs::metadata(&path).unwrap().len());
-    assert_eq!(decode::decode_file(&path).unwrap().frames(), buf.frames());
+    let back = decode::decode_file(&path).unwrap();
+    if summary.encoder == "ffmpeg/vorbis" {
+        // The native encoder is stereo-only and pads the end (see ffmpeg_formats_round_trip).
+        assert_eq!((summary.channels, back.num_channels()), (2, 2));
+        assert!(back.frames() >= buf.frames() && back.frames() - buf.frames() <= 1024);
+    } else {
+        assert_eq!(back.frames(), buf.frames());
+    }
 }

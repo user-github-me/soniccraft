@@ -482,7 +482,8 @@ describe('launcher', { skip: !unix && 'uses shell-script fakes' }, () => {
       let stderr = '';
       child.stdout.on('data', (d) => (stdout += d));
       child.stderr.on('data', (d) => (stderr += d));
-      const code = await new Promise((resolve) => child.on('exit', resolve));
+      // `close`, not `exit`: the output may still be in the pipes when the process exits.
+      const code = await new Promise((resolve) => child.on('close', resolve));
       assert.equal(stdout, 'args: mcp --base-dir p\n');
       assert.match(stderr, /soniccraft-mcp: downloading .*\nsoniccraft-mcp: installed /);
       assert.equal(code, 0);

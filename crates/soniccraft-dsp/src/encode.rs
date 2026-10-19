@@ -5,7 +5,7 @@
 //! | wav | hound | 16-bit (TPDF dither when `dither`), 24-bit (rounded), 32-bit float |
 //! | mp3 | LAME via mp3lame-encoder (cargo feature `mp3`, default on); ffmpeg/libmp3lame without it | CBR, mono/joint-stereo, LAME/Info tag for gapless playback |
 //! | flac | flacenc | 16-bit (dither when `dither`) or 24-bit |
-//! | ogg | ffmpeg libvorbis (native `vorbis` as a fallback) | |
+//! | ogg | ffmpeg libvorbis (native `vorbis` as a fallback) | the native encoder is stereo-only: mono is encoded as two identical channels, and it pads the end by a few ms |
 //! | opus | ffmpeg libopus (native `opus` as a fallback) | always 48 kHz (ffmpeg resamples) |
 //! | m4a | ffmpeg native AAC | `+faststart` |
 //!
@@ -543,10 +543,28 @@ fn encode_flac(buffer: &AudioBuffer, bit_depth: u16, dither: bool) -> Result<Vec
     Ok(sink.into_inner())
 }
 
+/// One ffmpeg encoder for a format.
+struct FfmpegCodec {
+    /// The `-c:a` name.
+    name: &'static str,
+    /// It needs `-strict experimental`.
+    experimental: bool,
+    /// It only encodes stereo (ffmpeg's native `vorbis`): mono input is upmixed to two channels.
+    stereo_only: bool,
+}
+
+const fn codec(name: &'static str, experimental: bool, stereo_only: bool) -> FfmpegCodec {
+    FfmpegCodec {
+        name,
+        experimental,
+        stereo_only,
+    }
+}
+
 /// How a format is produced with ffmpeg.
 struct FfmpegTarget {
-    /// Encoders to try in order, and whether each needs `-strict experimental`.
-    codecs: &'static [(&'static str, bool)],
+    /// Encoders to try in order (ffmpeg builds differ: Homebrew's has no libvorbis, for example).
+    codecs: &'static [FfmpegCodec],
     /// ffmpeg muxer name (the temp file's extension says nothing).
     muxer: &'static str,
     /// Extra output options.
@@ -556,21 +574,24 @@ struct FfmpegTarget {
 }
 
 const FFMPEG_OGG: FfmpegTarget = FfmpegTarget {
-    codecs: &[("libvorbis", false), ("vorbis", true)],
+    codecs: &[
+        codec("libvorbis", false, false),
+        codec("vorbis", true, true),
+    ],
     muxer: "ogg",
     extra: &[],
     sample_rate: None,
 };
 
 const FFMPEG_OPUS: FfmpegTarget = FfmpegTarget {
-    codecs: &[("libopus", false), ("opus", true)],
+    codecs: &[codec("libopus", false, false), codec("opus", true, false)],
     muxer: "opus",
     extra: &[],
     sample_rate: Some(48_000),
 };
 
 const FFMPEG_M4A: FfmpegTarget = FfmpegTarget {
-    codecs: &[("aac", false)],
+    codecs: &[codec("aac", false, false)],
     muxer: "ipod",
     extra: &["-movflags", "+faststart"],
     sample_rate: None,
@@ -578,7 +599,7 @@ const FFMPEG_M4A: FfmpegTarget = FfmpegTarget {
 
 #[cfg(not(feature = "mp3"))]
 const FFMPEG_MP3: FfmpegTarget = FfmpegTarget {
-    codecs: &[("libmp3lame", false)],
+    codecs: &[codec("libmp3lame", false, false)],
     muxer: "mp3",
     extra: &[],
     sample_rate: None,
@@ -599,7 +620,8 @@ fn encode_ffmpeg(
         .ok_or_else(|| DspError::FfmpegNotFound(format!("{format} encoding")))?;
     let feed = |w: &mut dyn Write| write_float_wav(w, buffer);
     let mut failures = Vec::new();
-    for &(codec, experimental) in target.codecs {
+    for codec in target.codecs {
+        let upmix = codec.stereo_only && buffer.num_channels() == 1;
         let result = fsutil::write_atomic_path(path, |temp| {
             let mut args = ffmpeg::args([
                 "-f",
@@ -613,10 +635,13 @@ fn encode_ffmpeg(
                 "-flags:a",
                 "+bitexact",
                 "-c:a",
-                codec,
+                codec.name,
             ]);
-            if experimental {
+            if codec.experimental {
                 args.extend(ffmpeg::args(["-strict", "experimental"]));
+            }
+            if upmix {
+                args.extend(ffmpeg::args(["-ac", "2"]));
             }
             args.extend(ffmpeg::args(["-b:a".to_string(), bitrate_bps.to_string()]));
             if let Some(rate) = target.sample_rate {
@@ -634,13 +659,15 @@ fn encode_ffmpeg(
                 return Ok(EncodeSummary {
                     bytes,
                     sample_rate: target.sample_rate.unwrap_or(buffer.sample_rate),
-                    channels: buffer.num_channels(),
+                    channels: if upmix { 2 } else { buffer.num_channels() },
                     bit_depth: None,
                     bitrate_bps: Some(bitrate_bps),
-                    encoder: format!("ffmpeg/{codec}"),
+                    encoder: format!("ffmpeg/{}", codec.name),
                 });
             }
-            Err(DspError::Encode { message, .. }) => failures.push(format!("{codec}: {message}")),
+            Err(DspError::Encode { message, .. }) => {
+                failures.push(format!("{}: {message}", codec.name));
+            }
             Err(other) => return Err(other),
         }
     }
@@ -696,6 +723,42 @@ fn write_float_wav(w: &mut dyn Write, buffer: &AudioBuffer) -> std::io::Result<(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// ffmpeg's native `vorbis` (the fallback when a build has no libvorbis, as Homebrew's) only encodes
+    /// stereo: mono input is upmixed, and the summary says so.
+    #[test]
+    fn native_vorbis_fallback_encodes_mono_as_stereo() {
+        if crate::ffmpeg::find_ffmpeg().is_none() {
+            return;
+        }
+        const NATIVE_ONLY: FfmpegTarget = FfmpegTarget {
+            codecs: &[codec("vorbis", true, true)],
+            muxer: "ogg",
+            extra: &[],
+            sample_rate: None,
+        };
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("mono.ogg");
+        let frames = 24_000;
+        let mono = AudioBuffer::new(
+            48_000,
+            vec![(0..frames).map(|i| (i as f32 * 0.05).sin() * 0.3).collect()],
+        );
+        let options = EncodeOptions {
+            format: EncodeFormat::Ogg {
+                bitrate_bps: 96_000,
+            },
+            dither: true,
+            ffmpeg: crate::ffmpeg::Ffmpeg::Auto,
+        };
+        let summary = encode_ffmpeg(&mono, &path, &options, &NATIVE_ONLY, 96_000).unwrap();
+        assert_eq!(summary.encoder, "ffmpeg/vorbis");
+        assert_eq!(summary.channels, 2);
+        let decoded = crate::decode::decode_file(&path).unwrap();
+        assert_eq!(decoded.num_channels(), 2);
+        // The native encoder pads the end a little; the start is aligned.
+        assert!(decoded.frames() >= frames && decoded.frames() - frames <= 1024);
+    }
 
     #[test]
     fn mp3_bitrate_tables() {
