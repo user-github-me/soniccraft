@@ -342,7 +342,8 @@ says so (`missing_credentials`); if you need an `env` entry, write `"${ELEVENLAB
 package uses `soniccraft` from `PATH` when there is one; otherwise it downloads the prebuilt release for your
 platform on first use and verifies it against SHA-256 checksums pinned in the package. Until it is published on
 the npm registry, run the package attached to the release instead of `soniccraft-mcp` in the commands below:
-`npx -y https://github.com/user-github-me/soniccraft/releases/download/v0.1.0/soniccraft-mcp-0.1.0.tgz`.
+`npx -y --allow-remote=root https://github.com/user-github-me/soniccraft/releases/download/v0.1.0/soniccraft-mcp-0.1.0.tgz`
+(npm 12 refuses packages from a URL without `--allow-remote=root`; older npm ignores the flag).
 
 ```bash
 claude mcp add soniccraft -- npx -y soniccraft-mcp
