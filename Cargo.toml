@@ -1,0 +1,79 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.89"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/user-github-me/soniccraft"
+homepage = "https://github.com/user-github-me/soniccraft"
+authors = ["SonicCraft contributors"]
+
+[workspace.dependencies]
+# internal crates (default features off so the `mp3` feature can be controlled from the top)
+soniccraft-core = { path = "crates/soniccraft-core", version = "0.1.0" }
+soniccraft-layout = { path = "crates/soniccraft-layout", version = "0.1.0" }
+soniccraft-captions = { path = "crates/soniccraft-captions", version = "0.1.0" }
+soniccraft-dsp = { path = "crates/soniccraft-dsp", version = "0.1.0", default-features = false }
+soniccraft-tts = { path = "crates/soniccraft-tts", version = "0.1.0" }
+soniccraft-engine = { path = "crates/soniccraft-engine", version = "0.1.0", default-features = false }
+soniccraft-mcp = { path = "crates/soniccraft-mcp", version = "0.1.0" }
+
+# serde / data
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = { version = "1.0.154", features = ["preserve_order", "float_roundtrip"] }
+indexmap = { version = "2.14.2", features = ["serde"] }
+schemars = { version = "1.2.3", features = ["indexmap2"] }
+serde-saphyr = "2.0.0"
+serde_ignored = "0.1.14"
+serde_path_to_error = "0.1.20"
+strsim = "0.11.1"
+unicode-segmentation = "1.13.3"
+
+# audio (versions verified together; see docs/DESIGN.md §11 for the LGPL note on mp3lame-encoder)
+symphonia = { version = "=0.6.1", default-features = false, features = ["opt-simd", "all-meta", "pcm", "adpcm", "wav", "aiff", "flac", "mp3", "ogg", "vorbis", "aac", "isomp4"] }
+rubato = "=5.0.1"
+ebur128 = "=0.1.10"
+hound = "=3.5.1"
+mp3lame-encoder = { version = "=0.2.5", features = ["std"] }
+flacenc = { version = "=0.5.1", default-features = false, features = ["par"] }
+
+# async / network
+tokio = { version = "1.53.3", features = ["rt-multi-thread", "macros", "process", "fs", "io-util", "io-std", "net", "sync", "time"] }
+futures = "0.3.34"
+reqwest = { version = "0.13.5", default-features = false, features = ["rustls", "http2", "json", "query", "stream"] }
+bytes = "1.11"
+rmcp = { version = "=3.5.1", features = ["server", "transport-io", "macros"] }
+
+# misc
+blake3 = "1.8.7"
+base64 = "0.23.1"
+which = "8.0.6"
+dirs = "7.0.0"
+# kill(2) of a child's process group (tts timeouts); std has no API for it
+libc = "0.2.191"
+clap = { version = "4.6.7", features = ["derive", "env"] }
+thiserror = "2.0.21"
+anyhow = "1.0.104"
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+
+# dev
+tempfile = "3.27.0"
+jsonschema = { version = "0.59.0", default-features = false }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+# Strip the symbol table too, not only debug info (cargo's release default): about 3 MB, or 18% of each
+# binary. Panics still report their source location; RUST_BACKTRACE backtraces are unsymbolized.
+strip = true
+
+# DSP-heavy tests are unbearably slow unoptimized; keep debug info but optimize.
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

@@ -1,0 +1,54 @@
+[package]
+name = "soniccraft-cli"
+description = "The soniccraft command-line interface: validate, plan and render declarative audio timelines, and serve them over MCP"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+readme = "README.md"
+keywords = ["audio", "tts", "podcast", "loudness", "mcp"]
+categories = ["command-line-utilities", "multimedia::audio"]
+# The library target only shares code between the two binaries; it is not a stable API.
+autobins = false
+# `cargo run -p soniccraft-cli -- <args>` runs the main CLI.
+default-run = "soniccraft"
+
+[features]
+default = ["mp3"]
+# Native MP3 encoding via LAME 3.100 (LGPL-2.0-or-later), statically linked through the LGPL-3.0 crates
+# mp3lame-sys and mp3lame-encoder. See licenses/README.md and docs/DESIGN.md §11.
+mp3 = ["soniccraft-engine/mp3"]
+
+[lib]
+name = "soniccraft_cli"
+path = "src/lib.rs"
+
+# Binaries are not documented: `soniccraft-mcp` would overwrite the `soniccraft_mcp` library's docs in
+# `cargo doc --workspace` (same output directory), and the CLI is documented by `--help` and the README.
+[[bin]]
+name = "soniccraft"
+path = "src/main.rs"
+doc = false
+
+[[bin]]
+name = "soniccraft-mcp"
+path = "src/bin/soniccraft-mcp.rs"
+doc = false
+
+[dependencies]
+soniccraft-engine.workspace = true
+soniccraft-mcp.workspace = true
+soniccraft-core.workspace = true
+soniccraft-dsp.workspace = true
+clap.workspace = true
+tokio = { workspace = true, features = ["signal"] }
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

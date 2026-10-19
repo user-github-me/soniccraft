@@ -1,0 +1,21 @@
+{
+  "name": "@soniccraft/web-preview",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-contained, zero-dependency HTML preview for SonicCraft renders: timeline, waveform, ducking, karaoke captions, diagnostics.",
+  "license": "MIT OR Apache-2.0",
+  "type": "module",
+  "files": [
+    "preview.html",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "node build-sample.mjs",
+    "sample": "node make-sample.mjs && node build-sample.mjs",
+    "test": "node --test test.mjs",
+    "test:browser": "node --test browser-test.mjs"
+  }
+}

@@ -1,0 +1,82 @@
+# Two-voice offline demo: no API keys needed (mock + macOS say).
+version: "1.0"
+title: "Offline demo"
+description: "Exercises speakers, defaults, pauses, ducking and subtitles without any cloud provider."
+output:
+  path: renders/offline-demo.flac
+  sample_rate: 44100
+  bit_depth: 16
+  loudness_preset: streaming
+  export_subtitles: [vtt, srt, json, transcript]
+  export_stems: true
+  export_manifest: true
+  tail_ms: 1.5s
+subtitles:
+  max_chars_per_line: 38
+  speaker_labels: true
+timing:
+  speech_overlap: push
+  min_gap_ms: 300ms
+mix:
+  reference_lufs: -19
+defaults:
+  provider: mock
+  settings: {wpm: 160}
+speakers:
+  host:
+    label: "Host"
+    voice_id: mock-host
+  guest:
+    label: "Guest"
+    provider: say
+    voice_id: Samantha
+    settings: {rate: 185}
+    gain_db: -1.5
+tracks:
+  - id: bed
+    type: music
+    clips:
+      - id: intro_music
+        source: audio/intro.wav
+        duration_ms: 4000
+        fade_out_ms: 800
+      - id: loop_bed
+        source: audio/loop.wav
+        loop: true
+        loop_crossfade_ms: 50
+        crossfade_ms: 800
+        end_relative: {after_cue: outro, offset_ms: 2s}
+        fade_out_ms: 1500
+        fade_curve: exponential
+    ducking:
+      trigger_tracks: [host, guest]
+      reduction_db: 12
+      mode: cue
+  - id: host
+    type: speech
+    speaker: host
+    start_relative: {with_cue: loop_bed, offset_ms: 500}
+    trim_silence: {threshold_db: -45, padding_ms: 40}
+    sequence:
+      - id: welcome
+        text: "Welcome to the offline demo."
+      - pause: 400ms
+      - id: question
+        text: "What does SonicCraft do?"
+      - id: outro
+        text: "Thanks for listening."
+        start_relative: {after_cue: answer, offset_ms: 300}
+  - id: guest
+    type: speech
+    speaker: guest
+    sequence:
+      - id: answer
+        text: "It compiles timelines into mastered audio."
+        caption: "It compiles timelines into mastered audio!"
+        start_relative: {after_cue: question, offset_ms: 250}
+  - id: chime
+    type: sfx
+    source: sfx/chime.wav
+    start_relative: {before_cue: welcome, offset_ms: -100}
+    volume: 0.5
+    normalize: {target_lufs: -24}

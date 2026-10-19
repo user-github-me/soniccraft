@@ -1,0 +1,13 @@
+[package]
+name = "soniccraft-captions"
+description = "SonicCraft captions: word alignment, caption segmentation, WebVTT/SRT/JSON writers"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+unicode-segmentation.workspace = true

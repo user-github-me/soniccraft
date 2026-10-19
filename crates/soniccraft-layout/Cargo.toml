@@ -1,0 +1,23 @@
+[package]
+name = "soniccraft-layout"
+description = "SonicCraft timeline geometry: sample-accurate scheduling, overlap policy and plan diagrams"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+default = []
+# Exposes `soniccraft_layout::test_support`: a builder that assembles lowered IR programs and duration tables
+# programmatically (for tests in this crate and in downstream crates such as the engine).
+test-support = []
+
+[dependencies]
+soniccraft-core.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+# Self dev-dependency: turns on `test-support` for this crate's own integration tests.
+soniccraft-layout = { path = ".", features = ["test-support"] }
+serde_json.workspace = true

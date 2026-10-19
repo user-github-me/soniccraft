@@ -1,0 +1,30 @@
+[package]
+name = "soniccraft-tts"
+description = "SonicCraft TTS providers (ElevenLabs, OpenAI-compatible, Cartesia, Kokoro, Piper, macOS say, command, mock) with a content-addressed cache"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+soniccraft-core.workspace = true
+soniccraft-dsp.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+futures.workspace = true
+reqwest.workspace = true
+bytes.workspace = true
+blake3.workspace = true
+base64.workspace = true
+which.workspace = true
+dirs.workspace = true
+tracing.workspace = true
+# Temporary working directories for child-process providers (piper, say, command); removed on drop.
+tempfile.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+# kill(2) of a child's whole process group on timeout or cancellation (std has no API for it).
+libc.workspace = true

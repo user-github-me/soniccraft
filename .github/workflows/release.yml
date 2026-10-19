@@ -1,0 +1,321 @@
+name: Release
+
+# Pushing a version tag (vX.Y.Z, or vX.Y.Z-rc.1 for a pre-release) builds the prebuilt binaries and
+# attaches them to a draft GitHub release. Review the draft, then publish it. Publishing the release also
+# publishes the npm launcher (packages/soniccraft-mcp) when the repository variable NPM_PUBLISH is `true`
+# (with the NPM_TOKEN secret, or npm trusted publishing configured for this workflow file).
+#
+# Assets of release vX.Y.Z:
+#   soniccraft-vX.Y.Z-<target>.tar.gz (.zip for Windows)   default features: native MP3 encoding with
+#                                                         LAME (LGPL; the archive carries licenses/)
+#   soniccraft-vX.Y.Z-<target>-no-mp3.tar.gz (.zip)       --no-default-features: no LGPL code; mp3
+#                                                         output needs ffmpeg
+#   <archive>.sha256 and SHA256SUMS                       SHA-256 checksums
+#   soniccraft-mcp-X.Y.Z.tgz                              the npm launcher, with these checksums pinned
+#
+# Each archive holds one directory, named like the archive, with soniccraft and soniccraft-mcp (.exe on
+# Windows), README.md, CHANGELOG.md, LICENSE-MIT, LICENSE-APACHE and THIRD-PARTY-LICENSES.txt
+# (scripts/third-party-licenses.py). packages/soniccraft-mcp/lib/resolve.mjs downloads exactly these names
+# and targets, and its tests check the target list below: change both together.
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing tag to build again, e.g. v0.1.0 (its draft release is reused)
+        required: true
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  TAG: ${{ inputs.tag || github.ref_name }}
+
+jobs:
+  draft:
+    name: check the version, create the draft release
+    if: github.event_name != 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - name: The tag names the workspace version
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::$TAG is not a version tag (vMAJOR.MINOR.PATCH, optionally -PRERELEASE)"
+            exit 1
+          fi
+          version="$(cargo metadata --no-deps --format-version 1 |
+            jq -r '.packages[] | select(.name == "soniccraft-cli") | .version')"
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error file=Cargo.toml::tag $TAG does not match the workspace version $version: set version = \"${TAG#v}\" in [workspace.package], or tag v$version"
+            exit 1
+          fi
+          launcher="$(jq -r .version packages/soniccraft-mcp/package.json)"
+          if [ "$launcher" != "$version" ]; then
+            echo "::error file=packages/soniccraft-mcp/package.json::the npm launcher's version is $launcher: set \"version\": \"$version\""
+            exit 1
+          fi
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${TAG#v}"
+          heading="$(grep -m 1 -F "## [$version]" CHANGELOG.md || true)"
+          if [ -z "$heading" ]; then
+            echo "::warning file=CHANGELOG.md::no \"## [$version]\" section: the release notes only list the downloads"
+          fi
+          case "$heading" in
+            *Unreleased*) echo "::warning file=CHANGELOG.md::the [$version] section is still marked Unreleased: set its date" ;;
+          esac
+          # The section's body: from its heading to the next "## [" heading.
+          awk -v heading="## [$version]" '
+            index($0, "## [") == 1 { if (found) exit; if (index($0, heading) == 1) { found = 1; next } }
+            found { print }
+          ' CHANGELOG.md >"$RUNNER_TEMP/notes.md"
+          sed "s/@TAG@/$TAG/g" >>"$RUNNER_TEMP/notes.md" <<'EOF'
+
+          ### Downloads
+
+          | Archive | Contents |
+          |---|---|
+          | `soniccraft-@TAG@-<target>.tar.gz` (`.zip` for Windows) | `soniccraft` and `soniccraft-mcp` with native MP3 encoding (LAME, LGPL: see `licenses/` in the archive) |
+          | `soniccraft-@TAG@-<target>-no-mp3.tar.gz` (`.zip`) | the same without LGPL code; mp3 output then needs ffmpeg |
+
+          Targets: `x86_64-unknown-linux-gnu` and `aarch64-unknown-linux-gnu` (glibc 2.35 or newer),
+          `aarch64-apple-darwin` and `x86_64-apple-darwin` (macOS 11 or newer), `x86_64-pc-windows-msvc`.
+          `SHA256SUMS` lists the SHA-256 of every archive, and each archive lists the licenses of the crates
+          compiled into it in `THIRD-PARTY-LICENSES.txt`. The npm launcher (`npx -y soniccraft-mcp`) downloads
+          the matching archive and verifies it against checksums pinned in the npm package.
+          EOF
+          cat "$RUNNER_TEMP/notes.md"
+      - name: Create the draft release, or reuse it
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if draft="$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2>/dev/null)"; then
+            if [ "$draft" != true ]; then
+              echo "::error::release $TAG is already published, and the npm launcher pins its archives' checksums: release a new version instead of rebuilding this one"
+              exit 1
+            fi
+            echo "reusing the draft release $TAG"
+            exit 0
+          fi
+          flags=(--draft --verify-tag --title "SonicCraft $TAG" --notes-file "$RUNNER_TEMP/notes.md")
+          case "$TAG" in *-*) flags+=(--prerelease) ;; esac
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" "${flags[@]}"
+
+  build:
+    name: ${{ matrix.platform.target }} (${{ matrix.flavor }})
+    needs: draft
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          # Ubuntu 22.04: the binaries need glibc 2.35 or newer. The arm64 runner is free for public repositories.
+          - { target: x86_64-unknown-linux-gnu, os: ubuntu-22.04 }
+          - { target: aarch64-unknown-linux-gnu, os: ubuntu-22.04-arm }
+          - { target: aarch64-apple-darwin, os: macos-15 }
+          # Cross-compiled on Apple silicon; LAME's autotools build gets --host=x86_64-apple-darwin from
+          # mp3lame-sys. The smoke test runs it under Rosetta 2.
+          - { target: x86_64-apple-darwin, os: macos-15 }
+          - { target: x86_64-pc-windows-msvc, os: windows-2025 }
+        flavor: [mp3, no-mp3]
+    runs-on: ${{ matrix.platform.os }}
+    timeout-minutes: 60
+    env:
+      TARGET: ${{ matrix.platform.target }}
+      FLAVOR: ${{ matrix.flavor }}
+      # Windows: aws-lc-sys (rustls' crypto) uses the NASM objects it ships instead of needing NASM.
+      AWS_LC_SYS_PREBUILT_NASM: "1"
+      # macOS: the same minimum for the Rust code and the C code (LAME, aws-lc) of both binaries.
+      MACOSX_DEPLOYMENT_TARGET: "11.0"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # No build cache: release binaries are built from scratch.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform.target }}
+      - name: Build
+        run: |
+          flags=(--release --locked -p soniccraft-cli --bins --target "$TARGET")
+          if [ "$FLAVOR" = no-mp3 ]; then
+            flags+=(--no-default-features)
+          fi
+          cargo build "${flags[@]}"
+      - name: Smoke test (version, mock-only render, MP3 encoder, MCP handshake)
+        run: |
+          exe=""
+          if [ "$RUNNER_OS" = Windows ]; then exe=".exe"; fi
+          dir="target/$TARGET/release"
+          run=()
+          if [ "$TARGET" = x86_64-apple-darwin ] && [ "$(uname -m)" = arm64 ]; then
+            if ! arch -x86_64 /usr/bin/true 2>/dev/null; then
+              echo "::warning::Rosetta 2 is not installed on this runner: $TARGET was built but not run"
+              file "$dir/soniccraft" | grep -q x86_64
+              exit 0
+            fi
+            run=(arch -x86_64)
+          fi
+          reported="$("${run[@]}" "$dir/soniccraft$exe" --version)"
+          echo "$reported"
+          if [ "$reported" != "soniccraft ${TAG#v}" ]; then
+            echo "::error::the binary reports \"$reported\", expected \"soniccraft ${TAG#v}\""
+            exit 1
+          fi
+          mkdir -p smoke
+          demo=examples/offline-demo/timeline.mock.yaml
+          "${run[@]}" "$dir/soniccraft$exe" render "$demo" -o smoke/demo.wav --cache-dir smoke/cache -q
+          test -s smoke/demo.wav
+          if [ "$FLAVOR" = mp3 ]; then
+            # --format: the demo sets `format: wav`, which wins over the .mp3 extension.
+            "${run[@]}" "$dir/soniccraft$exe" render "$demo" --format mp3 -o smoke/demo.mp3 --cache-dir smoke/cache -q
+            magic="$(od -An -tx1 -N2 smoke/demo.mp3 | tr -d ' \n')"
+            case "$magic" in
+              fff? | ffe? | 4944) echo "smoke/demo.mp3 is MP3 ($magic)" ;;
+              *) echo "::error::smoke/demo.mp3 starts with $magic, not an MPEG frame or an ID3 tag"; exit 1 ;;
+            esac
+          fi
+          request='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"release-smoke","version":"1"}}}'
+          reply="$(echo "$request" | "${run[@]}" "$dir/soniccraft-mcp$exe")"
+          echo "$reply"
+          grep -q '"serverInfo"' <<<"$reply"
+      - name: Package
+        id: package
+        run: |
+          exe=""
+          python=python3
+          if [ "$RUNNER_OS" = Windows ]; then exe=".exe"; python=python; fi
+          name="soniccraft-$TAG-$TARGET"
+          notice=(--target "$TARGET")
+          if [ "$FLAVOR" = no-mp3 ]; then
+            name="$name-no-mp3"
+            notice+=(--no-default-features)
+          fi
+          dir="dist/$name"
+          mkdir -p "$dir"
+          cp "target/$TARGET/release/soniccraft$exe" "target/$TARGET/release/soniccraft-mcp$exe" "$dir/"
+          cp README.md CHANGELOG.md LICENSE-MIT LICENSE-APACHE "$dir/"
+          "$python" scripts/third-party-licenses.py "${notice[@]}" --output "$dir/THIRD-PARTY-LICENSES.txt"
+          if [ "$FLAVOR" = mp3 ]; then
+            cp -R licenses "$dir/licenses"
+            grep -q '^mp3lame-sys ' "$dir/THIRD-PARTY-LICENSES.txt"
+          elif grep -q '^mp3lame' "$dir/THIRD-PARTY-LICENSES.txt"; then
+            echo "::error::the no-mp3 build contains the LGPL mp3lame crates"
+            exit 1
+          fi
+          cd dist
+          if [ "$RUNNER_OS" = Windows ]; then
+            asset="$name.zip"
+            7z a -tzip -bso0 "$asset" "$name"
+          else
+            # COPYFILE_DISABLE: no AppleDouble (._*) entries from macOS' tar.
+            asset="$name.tar.gz"
+            COPYFILE_DISABLE=1 tar -czf "$asset" "$name"
+          fi
+          if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum "$asset" >"$asset.sha256"
+          else
+            shasum -a 256 "$asset" >"$asset.sha256"
+          fi
+          cat "$asset.sha256"
+          echo "asset=$asset" >>"$GITHUB_OUTPUT"
+      - name: Upload to the draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ASSET: ${{ steps.package.outputs.asset }}
+        run: gh release upload "$TAG" "dist/$ASSET" "dist/$ASSET.sha256" --repo "$GITHUB_REPOSITORY" --clobber
+
+  checksums:
+    name: SHA256SUMS and the npm launcher
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Download and verify every archive
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p dist
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --dir dist \
+            --pattern "soniccraft-$TAG-*.tar.gz" --pattern "soniccraft-$TAG-*.zip" --pattern "soniccraft-$TAG-*.sha256"
+          # One "<sha256>  <archive>" line each; Windows' sha256sum marks binary mode with `*`.
+          cat dist/*.sha256 | sed 's/ \*/  /' | sort -k 2 >dist/SHA256SUMS
+          cat dist/SHA256SUMS
+          (cd dist && sha256sum --check --strict SHA256SUMS)
+      - name: Pin the checksums into the npm launcher and pack it
+        working-directory: packages/soniccraft-mcp
+        run: |
+          node scripts/pin-release.mjs --sums ../../dist/SHA256SUMS --repository "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+          npm pack --pack-destination ../../dist
+      - name: The packed launcher installs and verifies the Linux x64 archive
+        run: |
+          mirror="$RUNNER_TEMP/mirror"
+          mkdir -p "$mirror/$TAG" "$RUNNER_TEMP/launcher"
+          cp "dist/soniccraft-$TAG-x86_64-unknown-linux-gnu.tar.gz" "$mirror/$TAG/"
+          python3 -m http.server 8765 --bind 127.0.0.1 --directory "$mirror" >/dev/null 2>&1 &
+          tar -xzf "dist/soniccraft-mcp-${TAG#v}.tgz" -C "$RUNNER_TEMP/launcher"
+          for _ in $(seq 20); do curl -fsS -o /dev/null http://127.0.0.1:8765/ && break; sleep 0.5; done
+          # A clean environment: no soniccraft on PATH, an empty cache, the local mirror of the release.
+          bin="$(env -i PATH=/usr/bin:/bin HOME="$RUNNER_TEMP/home" SONICCRAFT_BIN_CACHE="$RUNNER_TEMP/cache" \
+            SONICCRAFT_DOWNLOAD_BASE=http://127.0.0.1:8765 \
+            "$(command -v node)" "$RUNNER_TEMP/launcher/package/bin/soniccraft-mcp.mjs" --install)"
+          "$bin" --version
+      - name: Upload SHA256SUMS and the npm package
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "$TAG" dist/SHA256SUMS "dist/soniccraft-mcp-${TAG#v}.tgz" \
+            --repo "$GITHUB_REPOSITORY" --clobber
+
+  npm:
+    name: publish soniccraft-mcp to npm
+    if: github.event_name == 'release' && vars.NPM_PUBLISH == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing and provenance
+    steps:
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Download the packed launcher of this release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "soniccraft-mcp-${TAG#v}.tgz" --dir dist
+      - name: Publish
+        env:
+          # An npm automation token, if any; without one, npm uses trusted publishing (OIDC).
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          channel=latest
+          case "$TAG" in *-*) channel=next ;; esac
+          npm publish "dist/soniccraft-mcp-${TAG#v}.tgz" --access public --provenance --tag "$channel"

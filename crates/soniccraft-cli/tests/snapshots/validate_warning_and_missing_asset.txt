@@ -1,0 +1,17 @@
+warning[bitrate_ignored]: `bitrate` is ignored for wav output (lossless)
+ --> warn.yaml:4:12
+  |
+4 |   bitrate: 192k
+  |            ^^^^
+  |
+  = hint: Remove `bitrate`, or choose a lossy format such as `format: mp3`
+
+error[asset_not_found]: audio file `assets/bed.wav` of clip `bed` does not exist (looked for <dir>/assets/bed.wav)
+ --> warn.yaml:8:13
+  |
+8 |     source: "assets/bed.wav"
+  |             ^^^^^^^^^^^^^^^^
+  |
+  = hint: The directory of `assets/bed.wav` does not exist; `source` paths are relative to the timeline directory `<dir>`
+
+error: warn.yaml is invalid: 1 error, 1 warning (1 note hidden, use -v to show)

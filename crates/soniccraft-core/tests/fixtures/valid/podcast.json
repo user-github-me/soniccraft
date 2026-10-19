@@ -1,0 +1,29 @@
+{
+  "version": "1.0",
+  "title": "JSON podcast",
+  "output": {"format": "m4a", "export_subtitles": "vtt"},
+  "providers": {
+    "studio": {"type": "openai", "base_url": "http://localhost:8880/v1", "model": "kokoro", "max_concurrency": 2,
+               "chars_per_second": 16.5, "settings": {"speed": 1.05}}
+  },
+  "tracks": [
+    {
+      "id": "narration",
+      "type": "speech",
+      "provider": "studio",
+      "voice_id": "af_heart",
+      "sequence": [
+        {"id": "intro", "text": "A timeline written as JSON."},
+        {"pause_duration": "00:00.750"},
+        {"text": "With a configured OpenAI-compatible server.", "settings": {"speed": 0.95}}
+      ]
+    },
+    {
+      "id": "sting",
+      "type": "sfx",
+      "source": "sfx/sting.wav",
+      "start_relative": {"after_cue": "intro"},
+      "gain_db": -3
+    }
+  ]
+}

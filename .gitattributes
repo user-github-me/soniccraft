@@ -1,0 +1,12 @@
+# Text files are checked out with LF everywhere: templates, snapshots and golden files are compared byte for
+# byte, and the shell scripts must run on Windows runners too.
+* text=auto eol=lf
+
+# Audio assets and fixtures are binary.
+*.wav binary
+*.mp3 binary
+*.flac binary
+*.ogg binary
+*.opus binary
+*.m4a binary
+*.aiff binary

@@ -1,0 +1,8 @@
+SonicCraft plan
+duration 0:01.5 | 48000 Hz | 1 track | 0 cues, 1 pause, 0 clips
+durations: 0 of 0 estimated
+
+time         0s      0.2s     0.4s     0.6s     0.8s     1s       1.2s     1.4s
+             |---+---|----+---|----+---|----+---|----+---|----+---|----+---|----
+v
+legend: # speech  = music/sfx  - ducked  blank = silence  (1 col = 0.02 s)

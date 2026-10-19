@@ -1,0 +1,98 @@
+# cargo-deny (https://embarkstudios.github.io/cargo-deny/) policy for the dependency graph.
+#
+# CI (.github/workflows/ci.yml, job `deny`) runs `cargo deny --all-features check bans licenses sources`
+# as a required check and `cargo deny --all-features check advisories` as an informational one, so a newly
+# published advisory never blocks unrelated pull requests. Locally: `cargo deny --all-features check`.
+#
+# A new dependency whose license is not allowed below fails CI: check that it is permissive (or, for
+# copyleft, that it is file-level and unmodified like MPL-2.0) and add the license or an exception here,
+# then mention it in licenses/README.md.
+
+[graph]
+# The platforms the release workflow ships binaries for (.github/workflows/release.yml); dependencies used
+# only on other platforms (wasm, UEFI, Android, ...) are not checked.
+targets = [
+    "x86_64-unknown-linux-gnu",
+    "aarch64-unknown-linux-gnu",
+    "aarch64-apple-darwin",
+    "x86_64-apple-darwin",
+    "x86_64-pc-windows-msvc",
+]
+all-features = true
+
+[advisories]
+# RustSec advisories (vulnerable, unsound, unmaintained) and yanked versions in Cargo.lock.
+yanked = "deny"
+ignore = []
+
+[licenses]
+# Permissive licenses accepted for any crate. Everything else needs an exception below.
+allow = [
+    "Apache-2.0",
+    "BSD-3-Clause",
+    "ISC",
+    "MIT",
+    "MIT-0",
+    "Unicode-3.0",
+    "Zlib",
+]
+confidence-threshold = 0.9
+exceptions = [
+    # LAME, the native MP3 encoder behind the default-on `mp3` cargo feature (see licenses/README.md and the
+    # clarifications below). Builds with `--no-default-features` contain no LGPL code.
+    { crate = "mp3lame-encoder", allow = ["LGPL-3.0-only"] },
+    { crate = "mp3lame-sys", allow = ["LGPL-3.0-only", "LGPL-2.0-or-later"] },
+    # MPL-2.0 is file-level copyleft: these crates are used unmodified, and their source is on crates.io.
+    { crate = "option-ext", allow = ["MPL-2.0"] },
+    { crate = "symphonia", allow = ["MPL-2.0"] },
+    { crate = "symphonia-bundle-flac", allow = ["MPL-2.0"] },
+    { crate = "symphonia-bundle-mp3", allow = ["MPL-2.0"] },
+    { crate = "symphonia-codec-aac", allow = ["MPL-2.0"] },
+    { crate = "symphonia-codec-adpcm", allow = ["MPL-2.0"] },
+    { crate = "symphonia-codec-pcm", allow = ["MPL-2.0"] },
+    { crate = "symphonia-codec-vorbis", allow = ["MPL-2.0"] },
+    { crate = "symphonia-common", allow = ["MPL-2.0"] },
+    { crate = "symphonia-core", allow = ["MPL-2.0"] },
+    { crate = "symphonia-format-isomp4", allow = ["MPL-2.0"] },
+    { crate = "symphonia-format-ogg", allow = ["MPL-2.0"] },
+    { crate = "symphonia-format-riff", allow = ["MPL-2.0"] },
+    { crate = "symphonia-metadata", allow = ["MPL-2.0"] },
+]
+
+# The mp3lame crates declare the deprecated SPDX id `LGPL-3.0`, and mp3lame-sys bundles the LAME 3.100
+# sources, which are LGPL-2.0-or-later (lame-3.100/COPYING). A clarification applies only while the hashes
+# of the listed files match (cargo-deny's XXH32 of each file with LF line endings, which
+# `python3 scripts/deny-license-hash.py FILE...` prints). After an update of these crates, a changed file
+# makes cargo-deny fall back to the manifest's `LGPL-3.0` and fail: review the new texts, then update the
+# hashes here.
+[[licenses.clarify]]
+crate = "mp3lame-sys"
+expression = "LGPL-3.0-only AND LGPL-2.0-or-later"
+license-files = [
+    { path = "LICENSE", hash = 0xdb3c2abe },
+    { path = "lame-3.100/COPYING", hash = 0x76e0f6ae },
+]
+
+[[licenses.clarify]]
+crate = "mp3lame-encoder"
+expression = "LGPL-3.0-only"
+license-files = [{ path = "LICENSE", hash = 0xdb3c2abe }]
+
+[bans]
+# Duplicate versions (currently bitflags and syn) are reported but do not fail the check.
+multiple-versions = "warn"
+wildcards = "deny"
+# Internal path dependencies carry a version too, so no exemption for wildcard paths is needed.
+allow-wildcard-paths = false
+
+# LAME's decoder is MPGLIB from mpg123, which is GPL: it must never be compiled into soniccraft.
+[[bans.features]]
+crate = "mp3lame-sys"
+deny = ["decoder"]
+
+[sources]
+# crates.io only: no git dependencies, no other registries.
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

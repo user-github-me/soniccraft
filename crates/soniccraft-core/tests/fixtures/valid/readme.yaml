@@ -1,0 +1,56 @@
+version: "1.0"
+output:
+  format: "mp3"
+  sample_rate: 48000
+  bitrate: "320k"
+  target_lufs: -16.0 # EBU R128 web standard
+  export_subtitles: true # Emits matching .vtt and .srt
+
+tracks:
+  - id: ambient_bed
+    type: "music"
+    source: "assets/audio/synthwave_loop.wav"
+    loop: true
+    volume: 0.65
+    fade_in_ms: 1200
+    fade_out_ms: 2500
+    ducking:
+      trigger_tracks: ["voice_primary", "voice_secondary"]
+      reduction_db: -18.0
+      attack_ms: 80
+      release_ms: 350
+
+  - id: voice_primary
+    type: "speech"
+    pan: -0.15 # Subtle left stereo placement
+    sequence:
+      - id: cue_01
+        speaker: "narrator"
+        provider: "elevenlabs"
+        voice_id: "21m00Tcm4TlvDq8ikWAM"
+        text: "Autonomous software development requires deterministic compilation targets."
+      - pause_duration: 350ms
+      - id: cue_03
+        speaker: "narrator"
+        provider: "elevenlabs"
+        voice_id: "21m00Tcm4TlvDq8ikWAM"
+        text: "By separating high-level planning from digital signal processing, systems eliminate runtime hallucinations."
+
+  - id: voice_secondary
+    type: "speech"
+    pan: 0.15 # Subtle right stereo placement
+    sequence:
+      - id: cue_02
+        start_relative:
+          after_cue: "cue_01"
+          offset_ms: 150
+        speaker: "guest"
+        provider: "local_kokoro"
+        voice_id: "am_adam"
+        text: "Exactly. SonicCraft treats audio composition the same way Hyperframes treated web-based video."
+
+  - id: sfx_impact
+    type: "sfx"
+    source: "assets/sfx/whoosh.wav"
+    volume: 0.8
+    start_at_ms: 0

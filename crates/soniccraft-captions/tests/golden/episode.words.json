@@ -1,0 +1,631 @@
+{
+  "version": "1.0",
+  "captions": [
+    {
+      "index": 1,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator",
+      "start_ms": 1665.0,
+      "end_ms": 5225.0,
+      "text": "Autonomous software development is changing how teams build, test,",
+      "lines": [
+        "Autonomous software development",
+        "is changing how teams build, test,"
+      ]
+    },
+    {
+      "index": 2,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator",
+      "start_ms": 5250.0,
+      "end_ms": 8615.0,
+      "text": "and ship products every single day. Let's see what that means.",
+      "lines": [
+        "and ship products every single day.",
+        "Let's see what that means."
+      ]
+    },
+    {
+      "index": 3,
+      "cue_id": "guest_q",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co",
+      "start_ms": 8265.0,
+      "end_ms": 10820.0,
+      "text": "Wait — what? R&D <beta> teams ship daily?",
+      "lines": [
+        "Wait — what? R&D <beta> teams ship daily?"
+      ]
+    },
+    {
+      "index": 4,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator",
+      "start_ms": 9885.0,
+      "end_ms": 13621.4,
+      "text": "In 1999, prices rose 12.5% — that's $3,000 per year…",
+      "lines": [
+        "In 1999, prices rose 12.5% —",
+        "that's $3,000 per year…"
+      ]
+    },
+    {
+      "index": 5,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator",
+      "start_ms": 13621.4,
+      "end_ms": 15005.0,
+      "text": "Wow! Nobody expected it.",
+      "lines": [
+        "Wow! Nobody expected it."
+      ]
+    },
+    {
+      "index": 6,
+      "cue_id": "sql",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co",
+      "start_ms": 15345.0,
+      "end_ms": 16515.0,
+      "text": "SQL databases are fast 🎉",
+      "lines": [
+        "SQL databases are fast 🎉"
+      ]
+    },
+    {
+      "index": 7,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator",
+      "start_ms": 17180.0,
+      "end_ms": 21380.0,
+      "text": "你好，世界。今天我们讨论人工智能的未来。",
+      "lines": [
+        "你好，世界。今天我们讨论人工智能的未来。"
+      ]
+    },
+    {
+      "index": 8,
+      "cue_id": "long",
+      "track_id": "narrator",
+      "speaker": "Narrator",
+      "start_ms": 21780.0,
+      "end_ms": 24452.1,
+      "text": "Pneumonoultramicroscopicsilicovolcanoconiosis-adjacent jargon.",
+      "lines": [
+        "Pneumonoultramicroscopicsilicovolcanoconiosis-adjacent",
+        "jargon."
+      ]
+    },
+    {
+      "index": 9,
+      "cue_id": "long",
+      "track_id": "narrator",
+      "speaker": "Narrator",
+      "start_ms": 24634.3,
+      "end_ms": 25434.3,
+      "text": "Done.",
+      "lines": [
+        "Done."
+      ]
+    }
+  ],
+  "words": [
+    {
+      "text": "Autonomous",
+      "start_ms": 1665.0,
+      "end_ms": 2215.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "software",
+      "start_ms": 2240.0,
+      "end_ms": 2680.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "development",
+      "start_ms": 2705.0,
+      "end_ms": 3310.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "is",
+      "start_ms": 3335.0,
+      "end_ms": 3445.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "changing",
+      "start_ms": 3470.0,
+      "end_ms": 3910.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "how",
+      "start_ms": 3935.0,
+      "end_ms": 4100.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "teams",
+      "start_ms": 4125.0,
+      "end_ms": 4400.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "build,",
+      "start_ms": 4425.0,
+      "end_ms": 4840.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "test,",
+      "start_ms": 4865.0,
+      "end_ms": 5225.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "and",
+      "start_ms": 5250.0,
+      "end_ms": 5415.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "ship",
+      "start_ms": 5440.0,
+      "end_ms": 5660.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "products",
+      "start_ms": 5685.0,
+      "end_ms": 6125.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "every",
+      "start_ms": 6150.0,
+      "end_ms": 6425.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "single",
+      "start_ms": 6450.0,
+      "end_ms": 6780.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "day.",
+      "start_ms": 6805.0,
+      "end_ms": 7110.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "Let's",
+      "start_ms": 7135.0,
+      "end_ms": 7495.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "see",
+      "start_ms": 7520.0,
+      "end_ms": 7685.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "what",
+      "start_ms": 7710.0,
+      "end_ms": 7930.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "that",
+      "start_ms": 7955.0,
+      "end_ms": 8175.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "means.",
+      "start_ms": 8200.0,
+      "end_ms": 8615.0,
+      "cue_id": "intro",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "Wait —",
+      "start_ms": 8265.0,
+      "end_ms": 8485.0,
+      "cue_id": "guest_q",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co"
+    },
+    {
+      "text": "what?",
+      "start_ms": 8675.0,
+      "end_ms": 9035.0,
+      "cue_id": "guest_q",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co"
+    },
+    {
+      "text": "R&D",
+      "start_ms": 9060.0,
+      "end_ms": 9310.0,
+      "cue_id": "guest_q",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co"
+    },
+    {
+      "text": "<beta>",
+      "start_ms": 9335.0,
+      "end_ms": 9835.0,
+      "cue_id": "guest_q",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co"
+    },
+    {
+      "text": "teams",
+      "start_ms": 9860.0,
+      "end_ms": 10135.0,
+      "cue_id": "guest_q",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co"
+    },
+    {
+      "text": "ship",
+      "start_ms": 10160.0,
+      "end_ms": 10380.0,
+      "cue_id": "guest_q",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co"
+    },
+    {
+      "text": "daily?",
+      "start_ms": 10405.0,
+      "end_ms": 10820.0,
+      "cue_id": "guest_q",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co"
+    },
+    {
+      "text": "In",
+      "start_ms": 9885.0,
+      "end_ms": 10103.3,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "1999,",
+      "start_ms": 10103.3,
+      "end_ms": 11195.0,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "prices",
+      "start_ms": 11545.0,
+      "end_ms": 11792.2,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "rose",
+      "start_ms": 11792.2,
+      "end_ms": 11940.5,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "12.5% —",
+      "start_ms": 11940.5,
+      "end_ms": 12558.5,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "that's",
+      "start_ms": 12558.5,
+      "end_ms": 12731.5,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "$3,000",
+      "start_ms": 12731.5,
+      "end_ms": 13349.5,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "per",
+      "start_ms": 13349.5,
+      "end_ms": 13473.1,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "year…",
+      "start_ms": 13473.1,
+      "end_ms": 13621.4,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "Wow!",
+      "start_ms": 13621.4,
+      "end_ms": 13745.0,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "Nobody",
+      "start_ms": 14195.0,
+      "end_ms": 14542.1,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "expected",
+      "start_ms": 14542.1,
+      "end_ms": 14889.3,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "it.",
+      "start_ms": 14889.3,
+      "end_ms": 15005.0,
+      "cue_id": "numbers",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "SQL",
+      "start_ms": 15345.0,
+      "end_ms": 15560.0,
+      "cue_id": "sql",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co"
+    },
+    {
+      "text": "databases",
+      "start_ms": 15585.0,
+      "end_ms": 16080.0,
+      "cue_id": "sql",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co"
+    },
+    {
+      "text": "are",
+      "start_ms": 16105.0,
+      "end_ms": 16270.0,
+      "cue_id": "sql",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co"
+    },
+    {
+      "text": "fast 🎉",
+      "start_ms": 16295.0,
+      "end_ms": 16515.0,
+      "cue_id": "sql",
+      "track_id": "guest",
+      "speaker": "Dr. Ada <Lovelace> & Co"
+    },
+    {
+      "text": "你",
+      "start_ms": 17180.0,
+      "end_ms": 17401.1,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "好，",
+      "start_ms": 17401.1,
+      "end_ms": 17622.1,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "世",
+      "start_ms": 17732.6,
+      "end_ms": 17953.7,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "界。",
+      "start_ms": 17953.7,
+      "end_ms": 18174.7,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "今",
+      "start_ms": 18506.3,
+      "end_ms": 18727.4,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "天",
+      "start_ms": 18727.4,
+      "end_ms": 18948.4,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "我",
+      "start_ms": 18948.4,
+      "end_ms": 19169.5,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "们",
+      "start_ms": 19169.5,
+      "end_ms": 19390.5,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "讨",
+      "start_ms": 19390.5,
+      "end_ms": 19611.6,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "论",
+      "start_ms": 19611.6,
+      "end_ms": 19832.6,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "人",
+      "start_ms": 19832.6,
+      "end_ms": 20053.7,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "工",
+      "start_ms": 20053.7,
+      "end_ms": 20274.7,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "智",
+      "start_ms": 20274.7,
+      "end_ms": 20495.8,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "能",
+      "start_ms": 20495.8,
+      "end_ms": 20716.8,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "的",
+      "start_ms": 20716.8,
+      "end_ms": 20937.9,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "未",
+      "start_ms": 20937.9,
+      "end_ms": 21158.9,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "来。",
+      "start_ms": 21158.9,
+      "end_ms": 21380.0,
+      "cue_id": "zh",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "Pneumonoultramicroscopicsilicovolcanoconiosis-adjacent",
+      "start_ms": 21780.0,
+      "end_ms": 24209.1,
+      "cue_id": "long",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "jargon.",
+      "start_ms": 24209.1,
+      "end_ms": 24452.1,
+      "cue_id": "long",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    },
+    {
+      "text": "Done.",
+      "start_ms": 24634.3,
+      "end_ms": 24780.0,
+      "cue_id": "long",
+      "track_id": "narrator",
+      "speaker": "Narrator"
+    }
+  ]
+}

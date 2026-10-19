@@ -1,0 +1,42 @@
+{
+  "name": "soniccraft-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for SonicCraft, the declarative multi-track audio engine for AI agents: launches `soniccraft mcp`, downloading a prebuilt binary when needed.",
+  "license": "MIT OR Apache-2.0",
+  "type": "module",
+  "bin": {
+    "soniccraft-mcp": "bin/soniccraft-mcp.mjs"
+  },
+  "files": [
+    "bin/",
+    "lib/",
+    "release.json",
+    "README.md",
+    "LICENSE-MIT",
+    "LICENSE-APACHE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "audio",
+    "tts",
+    "podcast",
+    "subtitles",
+    "ai-agents"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OWNER/soniccraft.git",
+    "directory": "packages/soniccraft-mcp"
+  },
+  "homepage": "https://github.com/OWNER/soniccraft/tree/main/packages/soniccraft-mcp#readme",
+  "bugs": "https://github.com/OWNER/soniccraft/issues",
+  "scripts": {
+    "test": "node --test test/launcher.test.mjs",
+    "pin-release": "node scripts/pin-release.mjs",
+    "prepack": "node scripts/check-release.mjs"
+  }
+}

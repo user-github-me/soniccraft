@@ -1,0 +1,17 @@
+SonicCraft plan: Grüße aus Köln
+duration 0:05.7 | 24000 Hz | 2 tracks | 3 cues, 0 pauses, 0 clips
+durations: 0 of 3 estimated | muted: muted
+
+time   0s     1s      2s     3s      4s     5s
+       |--+---|---+---|--+---|---+---|--+---|---+-
+nar... #######################          ##########
+muted                          #########
+legend: # speech  = music/sfx  - ducked  blank = silence  (1 col = 0.13 s)
+
+3 cues:
+  start     end      dur    track                     id                        speaker           source  text
+  0:00.00   0:03.00  3.00s  narrator_with_a_very_...  intro_cue_with_an_exc...  Zoë the narra...  exact   Grüße aus Köln — ...
+  0:03.25*  0:04.25  1.00s  muted                     m1                        -                 exact   Muted but laid out.
+  0:04.50*  0:05.70  1.20s  narrator_with_a_very_...  second                    -                 exact   Line breaks and s...
+  * m1 was pushed from 0:00.00 by the speech-overlap policy
+  * second was pushed from 0:03.00 by the speech-overlap policy

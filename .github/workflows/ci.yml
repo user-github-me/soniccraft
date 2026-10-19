@@ -1,0 +1,242 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  RUST_BACKTRACE: "1"
+
+jobs:
+  fmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      - run: cargo fmt --all --check
+
+  test:
+    name: clippy + test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Install ffmpeg (Ubuntu)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Install ffmpeg (macOS)
+        if: runner.os == 'macOS'
+        # Tests that need ffmpeg skip themselves when it is missing; do not fail the build on brew.
+        continue-on-error: true
+        run: command -v ffmpeg || brew install ffmpeg
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Test
+        run: cargo test --workspace --locked
+      - name: Build the CLI
+        run: cargo build -p soniccraft-cli --bins --locked
+      - name: "`cargo run -p soniccraft-cli` runs the soniccraft binary (default-run)"
+        run: cargo run -q -p soniccraft-cli --locked -- --version
+      - name: Validate every example and template
+        run: scripts/check-timelines.sh target/debug/soniccraft
+      - name: Render the mock-only demo (outputs, loudness, determinism)
+        run: scripts/smoke-render.sh target/debug/soniccraft examples/offline-demo/timeline.mock.yaml
+      - name: Render the macOS say demo
+        if: runner.os == 'macOS'
+        run: scripts/smoke-render.sh target/debug/soniccraft examples/offline-demo/timeline.yaml
+      - name: Committed JSON Schema matches `soniccraft schema`
+        run: diff <(target/debug/soniccraft schema | jq -S .) <(jq -S . skills/soniccraft/reference/timeline-schema.json)
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: npm launcher (packages/soniccraft-mcp), end to end with the built CLI
+        working-directory: packages/soniccraft-mcp
+        env:
+          SONICCRAFT_TEST_BIN: ${{ github.workspace }}/target/debug/soniccraft
+        run: npm test
+      - name: Web preview (packages/soniccraft-web-preview)
+        working-directory: packages/soniccraft-web-preview
+        run: npm test
+
+  msrv:
+    name: minimum Rust version (1.89)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # Keep in sync with `rust-version` in Cargo.toml. A dependency update that needs a newer Rust fails
+      # here: raise both, or keep the older dependency.
+      - uses: dtolnay/rust-toolchain@1.89.0
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --workspace --locked
+
+  no-default-features:
+    name: build without LAME (--no-default-features)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check -p soniccraft-cli --no-default-features --locked
+
+  windows:
+    name: build + smoke render (Windows)
+    runs-on: windows-latest
+    env:
+      # aws-lc-sys (rustls' crypto) uses the NASM objects it ships instead of needing NASM.
+      AWS_LC_SYS_PREBUILT_NASM: "1"
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out with LF line endings, as on Linux and macOS
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build the CLI
+        run: cargo build -p soniccraft-cli --bins --locked
+      - name: Render the mock-only demo with soniccraft.exe (twice, byte-identical; MP3 through LAME)
+        run: |
+          bin=target/debug/soniccraft.exe
+          "$bin" --version
+          demo=examples/offline-demo/timeline.mock.yaml
+          for run in 1 2; do
+            mkdir -p "smoke/run$run"
+            "$bin" render "$demo" -o "smoke/run$run/demo.wav" --cache-dir smoke/cache --manifest -q
+          done
+          for f in demo.wav demo.vtt demo.srt demo.manifest.json; do
+            test -s "smoke/run1/$f" || { echo "::error::smoke/run1/$f is missing or empty"; exit 1; }
+            cmp "smoke/run1/$f" "smoke/run2/$f" || { echo "::error::$f differs between two renders"; exit 1; }
+          done
+          "$bin" render "$demo" --format mp3 -o smoke/demo.mp3 --cache-dir smoke/cache -q
+          magic="$(od -An -tx1 -N2 smoke/demo.mp3 | tr -d ' \n')"
+          case "$magic" in
+            fff? | ffe? | 4944) echo "smoke/demo.mp3 is MP3 ($magic)" ;;
+            *) echo "::error::smoke/demo.mp3 starts with $magic, not an MPEG frame or an ID3 tag"; exit 1 ;;
+          esac
+          request='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"1"}}}'
+          reply="$(echo "$request" | target/debug/soniccraft-mcp.exe)"
+          grep -q '"serverInfo"' <<<"$reply" || { echo "::error::no initialize reply from soniccraft-mcp.exe: $reply"; exit 1; }
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: npm launcher with soniccraft.exe (.zip unpacking with tar.exe, PATH rules, MCP handshake)
+        working-directory: packages/soniccraft-mcp
+        env:
+          SONICCRAFT_TEST_BIN: ${{ github.workspace }}\target\debug\soniccraft.exe
+        run: npm test
+      - name: Test
+        # Windows is new to CI: the build and the smoke render above must pass, while some tests still
+        # assume POSIX paths or a Unix shell. Their failures are reported here but do not fail the
+        # workflow until the test suite is ported; remove continue-on-error then.
+        continue-on-error: true
+        run: cargo test --workspace --locked
+
+  node20:
+    name: npm packages on Node 20 (the oldest supported)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 20
+      - name: npm launcher (packages/soniccraft-mcp)
+        working-directory: packages/soniccraft-mcp
+        run: npm test
+      - name: Web preview (packages/soniccraft-web-preview)
+        working-directory: packages/soniccraft-web-preview
+        run: npm test
+
+  deny:
+    name: dependency licenses, bans and sources (cargo-deny)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          # The action's image ships an older Rust; current stable reads every dependency's manifest.
+          rust-version: stable
+          command: check bans licenses sources
+      - name: Third-party license notices for every release archive
+        run: |
+          for target in x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu aarch64-apple-darwin \
+            x86_64-apple-darwin x86_64-pc-windows-msvc; do
+            python3 scripts/third-party-licenses.py --target "$target" --output /dev/null
+            python3 scripts/third-party-licenses.py --target "$target" --no-default-features --output /dev/null
+          done
+
+  advisories:
+    name: security advisories (cargo-deny, informational)
+    runs-on: ubuntu-latest
+    # A newly published RustSec advisory must not block unrelated pull requests: it shows up as a failed
+    # job without failing the workflow. Fix it by updating the dependency (or an `ignore` in deny.toml).
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v7
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          rust-version: stable
+          command: check advisories
+
+  docs:
+    name: rustdoc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: cargo doc (warnings are errors; each crate documented once)
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: |
+          cargo doc --workspace --no-deps --locked 2>&1 | tee "$RUNNER_TEMP/doc.log"
+          if grep -q "output filename collision" "$RUNNER_TEMP/doc.log"; then
+            echo "::error::two targets write the same documentation directory: set doc = false on the [[bin]] that collides with a library"
+            exit 1
+          fi
+
+  repo:
+    name: skill, templates, assets, manifests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install ffprobe
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Agent Skill package
+        run: scripts/check-skill.sh
+      - name: Docs match the code (every diagnostic code documented, relative links and anchors resolve)
+        run: python3 scripts/check-docs.py
+      - name: Skill templates are in sync with the examples
+        run: scripts/sync-templates.sh --check
+      - name: Example assets (format, length, level, size budget)
+        run: scripts/generate-example-assets.sh --verify
+      - name: Plugin and MCP manifests are valid JSON
+        run: |
+          for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json .mcp.json; do
+            jq empty "$f"
+          done

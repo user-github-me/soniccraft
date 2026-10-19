@@ -1,0 +1,16 @@
+{
+  "name": "soniccraft",
+  "owner": {
+    "name": "user-github-me"
+  },
+  "description": "SonicCraft: a declarative audio engine for AI agents (Agent Skill + MCP server).",
+  "plugins": [
+    {
+      "name": "soniccraft",
+      "source": "./",
+      "description": "Agent Skill and MCP server that compile audio timelines into mastered audio and subtitles.",
+      "category": "media",
+      "tags": ["audio", "tts", "mcp", "podcast", "subtitles"]
+    }
+  ]
+}

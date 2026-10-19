@@ -1,0 +1,23 @@
+SonicCraft plan: Tech briefing
+duration 0:12.4 | 48000 Hz | 4 tracks | 3 cues, 1 pause, 2 clips
+durations: 2 of 5 estimated
+
+time         0s        2s         4s         6s         8s         10s       12s
+             |----+----|-----+----|-----+----|----+-----|----+-----|----+----|--
+host         #######################                   ###############
+guest                               ##################
+ambient_bed  ----------------------------------------------------------=========
+sfx                                                 ======
+legend: # speech  = music/sfx  - ducked  blank = silence  (1 col = 0.19 s)
+
+3 cues:
+  start     end      dur    track  id      speaker  source    text
+  0:00.00   0:04.20  4.20s  host   cue_01  host     estimate  Autonomous software development is changing h...
+  0:04.35   0:07.45  3.10s  guest  cue_02  guest    cache     It means the bottleneck moves from writing co...
+  0:07.80*  0:10.40  2.60s  host   cue_03  host     estimate  So what does that mean for code review?
+  * cue_03 was pushed from 0:04.55 by the speech-overlap policy
+
+2 clips:
+  start    end      dur     track        id           source  file
+  0:00.00  0:12.40  12.40s  ambient_bed  ambient_bed  fixed   music/ambient.wav (loop, open-ended, fade in 1.00s, fade out 2.00s)
+  0:07.40  0:08.20  0.80s   sfx          whoosh       source  sfx/whoosh.wav

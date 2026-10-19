@@ -1,0 +1,39 @@
+version: "1.0"
+trackz: []
+output:
+  formatt: mp3
+  format: flack
+  sampleRate: 44100
+  bitrate: "300k"
+  export_subtitles: [vvt, srt]
+tracks:
+  - id: bed
+    type: musik
+    source: bed.wav
+    loop: true
+    fade_in: 100
+    trigger_tracks: [voice]
+    ducking:
+      triggers: [voice]
+      trigger_tracks: [voise, cue_01, bed]
+      reduction_db: 80
+      mode: side_chain
+  - id: voice
+    type: speech
+    source: x.wav
+    sequence:
+      - id: cue_01
+        text: "Hello"
+        provider: elevnlabs
+        voice: abc
+        start_relative: {after: cue_02}
+      - pause_duration: 350ms
+        text: "oops"
+      - id: cue_02
+        text: ""
+        provider: mock
+        start_relative: {after_cue: cue_1, with_cue: cue_01}
+      - id: "my cue"
+        text: "Spaces"
+        provider: openai
+        start_relative: {after_cue: bed}

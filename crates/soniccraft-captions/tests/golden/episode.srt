@@ -1,0 +1,39 @@
+1
+00:00:01,665 --> 00:00:05,225
+Narrator: Autonomous software development
+is changing how teams build, test,
+
+2
+00:00:05,250 --> 00:00:08,615
+Narrator: and ship products every single day.
+Let's see what that means.
+
+3
+00:00:08,265 --> 00:00:10,820
+Dr. Ada <Lovelace> & Co: Wait — what? R&D <beta> teams ship daily?
+
+4
+00:00:09,885 --> 00:00:13,621
+Narrator: In 1999, prices rose 12.5% —
+that's $3,000 per year…
+
+5
+00:00:13,621 --> 00:00:15,005
+Narrator: Wow! Nobody expected it.
+
+6
+00:00:15,345 --> 00:00:16,515
+Dr. Ada <Lovelace> & Co: SQL databases are fast 🎉
+
+7
+00:00:17,180 --> 00:00:21,380
+Narrator: 你好，世界。今天我们讨论人工智能的未来。
+
+8
+00:00:21,780 --> 00:00:24,452
+Narrator: Pneumonoultramicroscopicsilicovolcanoconiosis-adjacent
+jargon.
+
+9
+00:00:24,634 --> 00:00:25,434
+Narrator: Done.

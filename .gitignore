@@ -1,0 +1,50 @@
+# Rust build output
+/target/
+
+# SonicCraft TTS cache (default: <timeline dir>/.soniccraft/cache)
+.soniccraft/
+
+# Rendered outputs next to example and template timelines. Only files directly inside each directory
+# are matched, so the committed sources under examples/*/assets/ stay tracked.
+/examples/*/*.wav
+/examples/*/*.mp3
+/examples/*/*.flac
+/examples/*/*.ogg
+/examples/*/*.opus
+/examples/*/*.m4a
+/examples/*/*.vtt
+/examples/*/*.srt
+/examples/*/*.words.json
+/examples/*/*.transcript.json
+/examples/*/*.manifest.json
+/examples/*/*.preview.html
+/examples/*/*.stems/
+/skills/soniccraft/reference/templates/*.wav
+/skills/soniccraft/reference/templates/*.mp3
+/skills/soniccraft/reference/templates/*.flac
+/skills/soniccraft/reference/templates/*.ogg
+/skills/soniccraft/reference/templates/*.opus
+/skills/soniccraft/reference/templates/*.m4a
+/skills/soniccraft/reference/templates/*.vtt
+/skills/soniccraft/reference/templates/*.srt
+/skills/soniccraft/reference/templates/*.words.json
+/skills/soniccraft/reference/templates/*.transcript.json
+/skills/soniccraft/reference/templates/*.manifest.json
+/skills/soniccraft/reference/templates/*.preview.html
+/skills/soniccraft/reference/templates/*.stems/
+
+# Secrets: API keys belong in the environment, never in the repository
+.env
+.env.*
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*~
+
+# Profiling and coverage
+*.profraw
+*.profdata
+/coverage/

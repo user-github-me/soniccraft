@@ -1,0 +1,101 @@
+# SonicCraft template "offline-demo".
+# `source:` paths are relative to this file. `soniccraft init --template offline-demo` writes the timeline
+# together with generated, royalty-free stand-ins for those assets; when you copy the file by hand, put
+# audio files at those paths (or point `source:` elsewhere, or delete the music/sfx tracks).
+# (Maintainers: generated from examples/offline-demo/timeline.yaml by scripts/sync-templates.sh.)
+#
+# The README exchange rendered with local voices only: no API keys, no network, no cost.
+# Speech uses the macOS `say` voices Samantha and Daniel; the sign-off uses the built-in `mock` voice.
+# On Linux or Windows use timeline.mock.yaml (same timeline, mock voices only).
+#
+#   cue_01  narrator  starts at 0
+#   cue_02  guest     starts 150 ms after cue_01 ends (explicit anchor)
+#   cue_03  narrator  implicit, 350 ms after cue_01 would collide with cue_02 -> pushed after cue_02
+#   cue_04  robot     900 ms after cue_03; an impact and a chime punctuate the ending
+#
+#   soniccraft plan   <this file>              # dry run: layout, ducking regions, ASCII diagram
+#   soniccraft render <this file> --preview    # offline-demo.wav + subtitles + manifest + preview.html
+version: "1.0"
+title: "SonicCraft offline demo"
+description: "Three-turn briefing over a ducked synthwave bed, rendered with macOS say and the mock voice."
+
+output:
+  path: offline-demo.wav
+  format: wav
+  bit_depth: 16
+  loudness_preset: podcast # -16 LUFS integrated, -1.0 dBTP true-peak ceiling
+  export_subtitles: [vtt, srt, json, transcript]
+  export_manifest: true
+
+speakers:
+  narrator:
+    provider: macos_say
+    voice_id: Samantha
+    label: Narrator
+  guest:
+    provider: macos_say
+    voice_id: Daniel
+    label: Guest
+  robot:
+    provider: mock
+    voice_id: mock
+    label: Robot
+
+tracks:
+  - id: ambient_bed
+    type: music
+    source: assets/audio/synthwave_loop.wav
+    loop: true # no length given: an open-ended bed that runs to the end of the timeline
+    volume: 0.65
+    fade_in_ms: 1200
+    fade_out_ms: 2500 # also sets the tail: the bed fades out 2.5 s after the last sound
+    ducking:
+      trigger_tracks: [voice_primary, voice_secondary, voice_robot]
+      reduction_db: -18
+      attack_ms: 80
+      release_ms: 350
+
+  - id: voice_primary
+    type: speech
+    speaker: narrator
+    pan: -0.15
+    sequence:
+      - id: cue_01
+        text: "Autonomous software development requires deterministic compilation targets."
+      - pause_duration: 350ms
+      - id: cue_03
+        text: "By separating high-level planning from digital signal processing, systems eliminate runtime hallucinations."
+
+  - id: voice_secondary
+    type: speech
+    speaker: guest
+    pan: 0.15
+    sequence:
+      - id: cue_02
+        start_relative: { after_cue: cue_01, offset_ms: 150 }
+        text: "Exactly. SonicCraft treats audio composition the same way Hyperframes treated web-based video."
+
+  - id: voice_robot
+    type: speech
+    speaker: robot
+    sequence:
+      - id: cue_04
+        start_relative: { after_cue: cue_03, offset_ms: 900 }
+        text: "Rendered offline. Zero API keys."
+
+  - id: sfx_impact
+    type: sfx
+    source: assets/sfx/whoosh.wav
+    volume: 0.8
+    start_at_ms: 0
+
+  - id: sfx_outro
+    type: sfx
+    clips:
+      - id: outro_hit
+        source: assets/sfx/impact.wav
+        start_relative: { after_cue: cue_03, offset_ms: 150 }
+        volume: 0.7
+      - id: outro_chime
+        source: assets/sfx/chime.wav
+        start_relative: { after_cue: cue_04, offset_ms: 250 }

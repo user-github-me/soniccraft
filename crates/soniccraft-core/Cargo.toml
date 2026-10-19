@@ -1,0 +1,21 @@
+[package]
+name = "soniccraft-core"
+description = "SonicCraft timeline DSL: parsing, validation, lowering and JSON Schema"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+indexmap.workspace = true
+schemars.workspace = true
+serde-saphyr.workspace = true
+serde_ignored.workspace = true
+serde_path_to_error.workspace = true
+strsim.workspace = true
+
+[dev-dependencies]
+jsonschema.workspace = true

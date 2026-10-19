@@ -1,0 +1,16 @@
+# Codex / ChatGPT skill metadata (optional sidecar to SKILL.md).
+# The MCP dependency is installed without arguments, so it uses the zero-argument launcher
+# `soniccraft-mcp` (equivalent to `soniccraft mcp`), which ships with the SonicCraft CLI.
+interface:
+  display_name: "SonicCraft"
+  short_description: "Compile scripts into ducked, loudness-mastered audio with subtitles"
+  default_prompt: "Use $soniccraft to turn this script into a mastered voiceover with a ducked music bed and subtitles."
+policy:
+  allow_implicit_invocation: true
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "soniccraft"
+      description: "SonicCraft MCP server: validate, dry-run and render audio timelines"
+      transport: "stdio"
+      command: "soniccraft-mcp"

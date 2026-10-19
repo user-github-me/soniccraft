@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta name="generator" content="SonicCraft web preview (payload format 1)">
+<title>SonicCraft preview</title>
+<style>
+:root{color-scheme:light dark;
+--page:#f5f6f8;--surface:#fff;--surface-2:#eef0f3;--ink:#14181e;--ink-2:#48515e;--ink-3:#5f6875;
+--line:#e3e6eb;--line-2:#c8cdd5;--border:rgba(20,24,30,.13);
+--speech:#2a78d6;--music:#eb6834;--sfx:#1baf7a;--other:#8a929e;
+--wa:15%;--duck:rgba(20,24,30,.08);--hl:rgba(42,120,214,.2);--row-on:rgba(42,120,214,.07);
+--good:#0ca30c;--warn:#fab219;--bad:#d03b3b;--info:#5f6875;--wave:#aab1bb;--wave-on:#14181e;
+--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+--mono:ui-monospace,Menlo,Consolas,monospace;
+--ruler-h:26px;--wave-h:88px;--lane-h:44px;--label-w:184px}
+@media (prefers-color-scheme:dark){:root{
+--page:#0f1216;--surface:#171b21;--surface-2:#1f242c;--ink:#e8ecf1;--ink-2:#b3bbc6;--ink-3:#8f99a6;
+--line:#262c35;--line-2:#3a424d;--border:rgba(255,255,255,.1);
+--speech:#3987e5;--music:#d95926;--sfx:#199e70;--other:#7d8794;
+--wa:26%;--duck:rgba(232,236,241,.09);--hl:rgba(57,135,229,.34);--row-on:rgba(57,135,229,.12);
+--info:#8f99a6;--wave:#4b5460;--wave-on:#e8ecf1}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:14px/1.45 var(--font);-webkit-text-size-adjust:100%}
+[hidden]{display:none!important}
+code{font-family:var(--mono);font-size:.92em}
+a{color:inherit;text-underline-offset:2px}
+p,h1,h2{margin:0}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:3px}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.ell{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.wrap{max-width:1680px;margin:0 auto;padding:0 24px}
+.t-speech{--c:var(--speech)}.t-music{--c:var(--music)}.t-sfx{--c:var(--sfx)}.t-other{--c:var(--other)}
+.top{padding-top:22px}
+.top h1{font-size:26px;line-height:1.2;font-weight:650;letter-spacing:-.015em;overflow-wrap:anywhere}
+.sub{margin-top:4px;color:var(--ink-2);font-size:13px}
+.banner{margin-top:12px;padding:8px 12px;border-left:3px solid var(--warn);background:var(--surface);font-size:13px}
+.stats{display:flex;flex-wrap:wrap;margin:18px 0 0;border-top:1px solid var(--line-2)}
+.st{flex:1 1 150px;min-width:0;padding:10px 16px 12px;border-left:1px solid var(--line)}
+.st:first-child{border-left:0;padding-left:0}
+.st dt{font-size:12px;color:var(--ink-2)}
+.st dd{margin:2px 0 0}
+.st .v{font-size:20px;font-weight:600;line-height:1.25;white-space:nowrap}
+.st .n{display:flex;gap:5px;font-size:12px;color:var(--ink-3)}
+.ic{width:16px;height:16px;flex:none}
+.st .ic{width:14px;height:14px;margin-top:1px}
+.ic>:first-child{fill:var(--ic)}
+.ic>:last-child{fill:none;stroke:#fff;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ic-good{--ic:var(--good)}.ic-error{--ic:var(--bad)}.ic-warning{--ic:var(--warn)}.ic-info{--ic:var(--info)}
+.ic-warning>:last-child{stroke:#14181e}
+.ic-info>:first-child{fill:none;stroke:var(--ic);stroke-width:1.4}.ic-info>:last-child{stroke:var(--ic)}
+.bar{position:sticky;top:0;z-index:20;margin:16px 0;background:var(--page);border-bottom:1px solid var(--line)}
+.bar-in{display:flex;align-items:center;gap:10px 16px;flex-wrap:wrap;padding-block:10px}
+.play{width:42px;height:42px;flex:none;border:0;border-radius:50%;background:var(--ink);color:var(--page);display:grid;place-items:center;cursor:pointer}
+.play svg{width:20px;height:20px;fill:currentColor}
+.clock{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.clock span+span{color:var(--ink-3);font-weight:500}
+.anote{display:flex;align-items:center;gap:6px 10px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
+.zoom{margin-left:auto;display:flex;align-items:center;gap:4px}
+.zoom output{min-width:46px;text-align:center;font-size:12px;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.btn,.tip,.hov span,.chip,kbd{background:var(--surface);border:1px solid var(--border);color:var(--ink)}
+.btn{font:inherit;font-size:13px;border-radius:7px;min-height:32px;padding:0 11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn:disabled{opacity:.4;cursor:default}
+.btn.sq{width:32px;padding:0;font-size:17px}
+.btn.sm{min-height:28px;font-size:12.5px}
+.btn.pri{background:var(--ink);color:var(--page);border-color:var(--ink)}
+label.btn:focus-within{outline:2px solid var(--ink);outline-offset:2px}
+.tlp{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.tl{display:grid;grid-template-columns:var(--label-w) minmax(0,1fr)}
+.labels{border-right:1px solid var(--line);min-width:0}
+.lb{height:var(--lane-h);border-top:1px solid var(--line);padding:0 10px 0 14px;display:flex;flex-direction:column;justify-content:center;gap:2px;min-width:0}
+.lb-ruler,#ruler{height:var(--ruler-h)}.lb-ruler{border-top:0}
+.lb-wave,#wave{height:var(--wave-h)}
+.lb b{font:600 12px var(--mono)}
+.lb-row{display:flex;align-items:center;gap:6px;min-width:0}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--ink-2);white-space:nowrap}
+.badge::before,.trk::before{content:"";display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--c)}
+.lb small{font-size:11px;color:var(--ink-3)}
+.scroll{overflow-x:auto;overflow-y:hidden;outline-offset:-2px}
+.content{position:relative;min-width:100%;overflow:clip;cursor:crosshair;touch-action:pan-x pan-y;user-select:none;-webkit-user-select:none}
+.content canvas{display:block;position:sticky;left:0}
+.lanes{position:relative;overflow:clip;background-image:linear-gradient(to right,var(--line) 1px,transparent 1px)}
+.lane{position:relative;height:var(--lane-h);border-top:1px solid var(--line)}
+.lane.muted .blk{opacity:.45}
+.blk{position:absolute;top:8px;bottom:8px;min-width:1px;display:flex;align-items:center;gap:5px;padding:0 6px 0 9px;border-radius:4px;background:color-mix(in srgb,var(--c) var(--wa),transparent);box-shadow:inset 3px 0 0 var(--c);font-size:12px;line-height:1.2;white-space:nowrap;overflow:clip}
+.blk.clip{box-shadow:inset 0 2px 0 var(--c);padding-left:7px}
+.blk>span{position:sticky;left:8px;min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--ink-2)}
+.blk b{font-weight:600;color:var(--ink);margin-right:5px}
+.blk.clip>span{color:var(--ink)}
+.blk i{font-style:normal;color:var(--ink-2)}
+.blk>i{flex:none;margin-left:auto}
+.blk.tight>*,.pause.tight span{display:none}
+.pause,.push::before{position:absolute;border-left:1px solid var(--ink-3)}
+.pause{top:calc(50% - 4px);height:9px;min-width:3px;border-right:1px solid var(--ink-3)}
+.pause::before{content:"";position:absolute;left:0;right:0;top:4px;border-top:1px solid var(--ink-3)}
+.pause span{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);font-size:10px;color:var(--ink-3);white-space:nowrap}
+.push{position:absolute;bottom:3px;height:1px;background:var(--ink-3)}
+.push::before{content:"";left:0;top:-3px;height:7px}
+.push::after{content:"";position:absolute;right:-1px;top:-3px;border:solid transparent;border-width:3.5px 0 3.5px 6px;border-left-color:var(--ink-3)}
+.duck,.ph,.hov{position:absolute;top:0;bottom:0;left:0}
+.duck{background:var(--duck)}
+.env{position:absolute;left:0;top:0;height:100%}
+.env polyline{fill:none;stroke:var(--ink);stroke-width:2;stroke-linejoin:round;vector-effect:non-scaling-stroke;opacity:.8}
+.push,.duck,.env,.ph,.hov{pointer-events:none}
+.ph{width:2px;margin-left:-1px;background:var(--ink);z-index:3;will-change:transform}
+.ph::before{content:"";position:absolute;top:0;left:-5px;border:solid transparent;border-width:7px 6px 0;border-top-color:var(--ink)}
+.hov{width:1px;background:var(--ink-3);opacity:.7;z-index:2}
+.hov span{position:absolute;top:4px;left:6px;padding:0 5px;border-radius:4px;font-size:11px;line-height:16px;white-space:nowrap}
+.hov.flip span{left:auto;right:6px}
+.caps{border-top:1px solid var(--line);min-height:112px;padding:14px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.cap{max-width:62ch}
+.cap-who{margin-bottom:3px;font-size:12px;color:var(--ink-2)}
+.cap-text{font-size:22px;line-height:1.35;font-weight:500;text-wrap:balance}
+.karaoke .cap-text,.cap.next{color:var(--ink-3)}
+.ln{display:block}
+.w{border-radius:4px;padding:0 2px;margin:0 -2px}
+.w.done,.w.now{color:var(--ink)}
+.w.now{background:var(--hl)}
+.cap-none{font-size:13px;color:var(--ink-3)}
+.panels{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,400px);gap:28px 36px;margin-top:30px}
+h2{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;font-size:15px;font-weight:650}
+h2 small{font-size:12px;font-weight:500;color:var(--ink-3)}
+.tw{max-height:460px;overflow:auto;border-top:1px solid var(--line-2)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{position:sticky;top:0;z-index:1;background:var(--page);padding:7px 10px;border-bottom:1px solid var(--line-2);text-align:left;font-size:12px;font-weight:600;color:var(--ink-2);white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+.num,td:first-child,.trk{white-space:nowrap}
+.num,.clock,.hov span,.pause span{font-variant-numeric:tabular-nums}
+th.num,.num{text-align:right}
+tr[data-i]{cursor:pointer}
+tr[data-i]:hover{background:var(--surface-2)}
+tr.on{background:var(--row-on)}
+tr.on td:first-child{box-shadow:inset 3px 0 0 var(--c)}
+.kind{margin-left:6px;font-size:11px;color:var(--ink-3)}
+.trk{font-family:var(--mono);font-size:12px}
+.trk::before{margin-right:6px}
+.src{font-size:12px;color:var(--ink-2)}
+.txt{min-width:220px;max-width:560px}
+.txt b{font-weight:600}
+.note{display:block;font-size:12px;color:var(--ink-3)}
+.empty{color:var(--ink-3);text-align:center;padding:18px}
+.dgs{list-style:none;margin:0;padding:0;border-top:1px solid var(--line-2)}
+.dg{display:grid;grid-template-columns:16px minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+.dg .ic{margin-top:2px}
+.dg-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-size:12px;color:var(--ink-2)}
+.dg-head b{color:var(--ink)}
+.dg-msg{margin-top:2px}
+.dg-sub{margin-top:4px;font-size:12px;color:var(--ink-2)}
+.chip{font:11.5px var(--mono);border-radius:5px;padding:1px 6px;margin:2px 4px 0 0;cursor:pointer}
+.chip:hover{background:var(--surface-2)}
+.dg.none{display:block;color:var(--ink-3)}
+.foot{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 24px;margin-top:36px;padding-block:14px 28px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-3)}
+kbd{font:11px var(--mono);padding:0 4px;border-bottom-width:2px;border-radius:4px;color:var(--ink-2)}
+.tip{position:fixed;left:0;top:0;z-index:50;max-width:340px;padding:8px 10px;border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.16);font-size:12px;line-height:1.4;pointer-events:none}
+.tip p+p{margin-top:3px}
+.tip .k{color:var(--ink-2)}
+.loader{min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.drop{width:100%;max-width:580px;padding:30px;border:1.5px dashed var(--line-2);border-radius:14px;background:var(--surface)}
+.drop h1{margin-bottom:8px;font-size:22px;font-weight:650}
+.drop>p{color:var(--ink-2)}
+.pick{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}
+.hints{margin:0;padding-left:18px;color:var(--ink-2);font-size:13px}
+.lstatus{margin-top:14px;font-size:13px;white-space:pre-line;overflow-wrap:anywhere}
+body.drag .drop{border-color:var(--speech);background:var(--row-on)}
+body.drag #app::after{content:"Drop to open";position:fixed;inset:12px;z-index:100;display:grid;place-items:center;border:2px dashed var(--speech);border-radius:14px;background:var(--row-on);font-size:18px;font-weight:600;pointer-events:none}
+@media (max-width:1100px){.panels{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:640px){:root{--label-w:92px;--wave-h:64px;--lane-h:42px;--ruler-h:24px}
+.wrap{padding:0 16px}.top{padding-top:16px}.top h1{font-size:21px}
+.stats{display:grid;grid-template-columns:1fr 1fr}
+.st,.st:first-child{border-left:0;border-top:1px solid var(--line);padding:9px 10px 10px 0}
+.st:nth-child(-n+2){border-top:0}.st:nth-child(even){padding-left:12px;border-left:1px solid var(--line)}
+.st .v,.clock{font-size:17px}.play{width:40px;height:40px}
+.lb{padding:0 6px 0 10px}.lb small{display:none}.badge{font-size:10px}
+.caps{min-height:96px;padding:12px}.cap-text{font-size:18px}
+.c-end{display:none}.txt{min-width:180px}}
+</style>
+</head>
+<body>
+<div id="app" hidden>
+<header class="wrap top">
+<h1 id="title">SonicCraft preview</h1>
+<p class="sub" id="sub"></p>
+<p class="banner" id="banner" hidden></p>
+<dl class="stats" id="stats"></dl>
+</header>
+<div class="bar">
+<div class="wrap bar-in">
+<button class="play" id="play" type="button" aria-label="Play" title="Play (Space)"><svg viewBox="0 0 24 24" aria-hidden="true"><path id="playIcon" d="M8 5.7v12.6c0 .5.5.8.9.5l10-6.3c.4-.3.4-.8 0-1.1l-10-6.3c-.4-.2-.9.1-.9.6z"/></svg></button>
+<p class="clock" aria-hidden="true"><span id="now">0:00.00</span> <span>/ <span id="dur">0:00.00</span></span></p>
+<div class="anote" id="anote" hidden><span id="anoteText"></span><label class="btn sm">Choose audio<input class="vh" type="file" id="pickAudio2" accept="audio/*,.opus,.m4a,.flac"></label></div>
+<div class="zoom" role="group" aria-label="Timeline zoom">
+<button class="btn sq" id="zout" type="button" aria-label="Zoom out" title="Zoom out (−)">−</button>
+<output id="zlvl">1.0×</output>
+<button class="btn sq" id="zin" type="button" aria-label="Zoom in" title="Zoom in (+)">+</button>
+<button class="btn" id="zfit" type="button" title="Show the whole timeline (0)">Fit</button>
+</div>
+</div>
+</div>
+<main class="wrap">
+<section class="tlp" aria-label="Timeline">
+<div class="tl">
+<div class="labels" id="labels" aria-hidden="true"></div>
+<div class="scroll" id="scroll" tabindex="0" role="slider" aria-label="Playback position" aria-valuemin="0" aria-valuemax="0" aria-valuenow="0">
+<div class="content" id="content">
+<canvas id="ruler"></canvas>
+<canvas id="wave"></canvas>
+<div class="lanes" id="lanes"></div>
+<div class="hov" id="hov" hidden><span id="hovT"></span></div>
+<div class="ph" id="ph"></div>
+</div>
+</div>
+</div>
+<div class="caps" id="caps" aria-live="polite" aria-atomic="true" aria-label="Captions"></div>
+</section>
+<div class="panels">
+<section aria-labelledby="h-items">
+<h2 id="h-items">Items <small id="nItems"></small></h2>
+<div class="tw" id="tw"><table>
+<thead><tr><th scope="col">Item</th><th scope="col">Track</th><th scope="col" class="num">Start</th><th scope="col" class="num c-end">End</th><th scope="col" class="num">Duration</th><th scope="col" title="Where the duration came from">Source</th><th scope="col">Text</th></tr></thead>
+<tbody id="rows"></tbody>
+</table></div>
+</section>
+<section aria-labelledby="h-diag">
+<h2 id="h-diag">Diagnostics <small id="nDiag"></small></h2>
+<ul class="dgs" id="diags"></ul>
+</section>
+</div>
+</main>
+<footer class="wrap foot">
+<p id="files">SonicCraft preview</p>
+<p><kbd>Space</kbd> play/pause, <kbd>←</kbd><kbd>→</kbd> 5 s (<kbd>Shift</kbd> 1 s), <kbd>Home</kbd><kbd>End</kbd>, <kbd>+</kbd><kbd>−</kbd> zoom, <kbd>0</kbd> fit</p>
+</footer>
+</div>
+<div class="loader" id="loader" hidden>
+<section class="drop" aria-labelledby="l-h">
+<h1 id="l-h">Open a SonicCraft render</h1>
+<p>Drop the files anywhere on this page or choose them below. They stay on this device; nothing is uploaded.</p>
+<div class="pick">
+<label class="btn pri">Choose report<input class="vh" type="file" id="pickJson" accept=".json,application/json" multiple></label>
+<label class="btn">Choose audio<input class="vh" type="file" id="pickAudio" accept="audio/*,.opus,.m4a,.flac"></label>
+</div>
+<ul class="hints">
+<li>A <code>.preview.json</code> payload, a <code>.manifest.json</code> render report or the output of <code>soniccraft plan --json</code></li>
+<li>Optional: the <code>.words.json</code> captions, for word-by-word highlighting</li>
+<li>The rendered audio: mp3, wav, flac, ogg, opus or m4a</li>
+</ul>
+<p class="lstatus" id="lstatus" role="status"></p>
+</section>
+</div>
+<div class="tip" id="tip" role="tooltip" hidden></div>
+<audio id="audio" preload="metadata"></audio>
+<script id="soniccraft-data" type="application/json">__SONICCRAFT_DATA__</script>
+<div hidden>--></script></div>
+<script>
+/* SonicCraft web preview: self-contained (no network, no dependencies, works from file://).
+   Data contract: docs/DESIGN.md §8 (RenderReport) and §10.2 (preview payload). Payload values are untrusted and
+   reach the DOM only through textContent and attributes, never innerHTML. */
+(() => {
+'use strict';
+// Concatenated so that the engine's placeholder substitution can never touch this script.
+const TOKEN = '__SONICCRAFT' + '_DATA__';
+const MINUS = '−';
+const STEPS = [.001, .002, .005, .01, .02, .05, .1, .2, .5, 1, 2, 5, 10, 15, 30, 60, 120, 300, 600, 900, 1800, 3600, 7200];
+const DIVS = [5, 4, 5, 5, 4, 5, 5, 4, 5, 5, 4, 5, 5, 3, 3, 4, 4, 5, 5, 3, 3, 4, 4];
+const TYPES = ['speech', 'music', 'sfx'], SEVS = ['error', 'warning', 'info'];
+const SRC = { exact: 'synthesized in this render', cache: 'served from the TTS cache', estimate: 'estimated (dry run)', source: 'measured from the source file', fixed: 'fixed by the timeline' };
+
+// ---------- pure helpers (exported for the node tests) ----------
+const isObj = v => v !== null && typeof v === 'object' && !Array.isArray(v);
+const arr = v => (Array.isArray(v) ? v : []);
+const str = v => (typeof v === 'string' ? v : typeof v === 'number' && isFinite(v) ? String(v) : '');
+const has = v => typeof v === 'number' && isFinite(v);
+const clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
+const byStart = (a, b) => a.s - b.s || a.i - b.i;
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+const maxOf = (list, f, m) => list.reduce((a, x) => Math.max(a, f(x)), m); // no spread: lists can be huge
+const baseName = p => str(p).split(/[\\/]/).pop();
+function num(v, d = NaN) {
+  if (typeof v === 'number') return isFinite(v) ? v : d;
+  if (typeof v === 'string' && v.trim()) { const n = Number(v); return isFinite(n) ? n : d; }
+  return d;
+}
+/** Fixed decimals with a typographic minus; "—" when missing. */
+function fmtNum(v, dp = 1) {
+  if (!has(v)) return '—';
+  const s = Math.abs(v).toFixed(dp);
+  return (v < 0 && +s ? MINUS : '') + s;
+}
+const fmtSigned = (v, dp = 1) => (has(v) && v > 0 && +v.toFixed(dp) ? '+' : '') + fmtNum(v, dp);
+/** Seconds → "m:ss.cc" or "h:mm:ss.cc" with `dp` decimals. */
+function fmtTime(sec, dp = 2) {
+  if (!has(sec)) sec = 0;
+  const p = 10 ** dp;
+  let u = Math.round(Math.abs(sec) * p);
+  const frac = u % p;
+  u = (u - frac) / p;
+  const s = u % 60, m = Math.floor(u / 60) % 60, hr = Math.floor(u / 3600);
+  const out = (hr ? hr + ':' + String(m).padStart(2, '0') : m) + ':' + String(s).padStart(2, '0') + (dp > 0 ? '.' + String(frac).padStart(dp, '0') : '');
+  return (sec < 0 && (u || frac) ? MINUS : '') + out;
+}
+const fmtLen = ms => (!has(ms) ? '—' : ms < 60000 ? (ms / 1000).toFixed(3) + ' s' : fmtTime(ms / 1000, 1));
+const fmtMs = ms => (ms < 1000 ? Math.round(ms) + ' ms' : fmtLen(ms));
+const fmtBytes = b => (b < 1024 ? b + ' B' : b < 1048576 ? Math.round(b / 1024) + ' KB' : (b / 1048576).toFixed(1) + ' MB');
+/** Ruler: smallest "nice" major step >= `minPx` wide, minor divisions, label decimals. */
+function tickStep(pps, minPx = 72) {
+  let i = STEPS.findIndex(s => s * pps >= minPx);
+  if (i < 0) i = STEPS.length - 1;
+  const major = STEPS[i];
+  return { major, div: DIVS[i], dp: major < .01 ? 3 : major < .1 ? 2 : major < 1 ? 1 : 0 };
+}
+/** Kind of SonicCraft JSON: payload | report | plan | words | null. */
+function classify(j) {
+  if (!isObj(j)) return null;
+  if ('soniccraft_preview' in j || isObj(j.report)) return 'payload';
+  if (isObj(j.output) && Array.isArray(j.items)) return 'report';
+  if (Array.isArray(j.items) && ('diagram' in j || 'estimated' in j || 'synthesis' in j)) return 'plan';
+  return Array.isArray(j.captions) || Array.isArray(j.words) ? 'words' : null;
+}
+/** Relative paths (encoded per segment) or http(s)/file/blob URLs; never javascript: etc. */
+function safeHref(p) {
+  const s = str(p).trim();
+  if (!s) return null;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(s)) return /^(https?|file|blob):/i.test(s) ? s : null;
+  return s.split('/').map(encodeURIComponent).join('/');
+}
+const bound = (list, t, le) => { let lo = 0, hi = list.length; while (lo < hi) { const m = (lo + hi) >> 1; if (le ? list[m].s <= t : list[m].s < t) lo = m + 1; else hi = m; } return lo; };
+/** Indices of the captions active at `t` ms (start <= t < end), ascending. */
+function activeCaps(caps, maxDur, t) {
+  const out = [];
+  for (let k = bound(caps, t, true) - 1; k >= 0 && caps[k].s >= t - maxDur; k--) if (caps[k].e > t) out.unshift(k);
+  return out;
+}
+function normItem(it) {
+  if (!isObj(it)) return null;
+  let s = num(it.start_ms), e = num(it.end_ms);
+  const d = num(it.duration_ms);
+  if (!has(s)) s = has(e) && has(d) ? e - d : 0;
+  if (!has(e)) e = has(d) ? s + d : s;
+  if (e < s) [s, e] = [e, s];
+  const kind = ['cue', 'pause', 'clip'].includes(it.kind) ? it.kind : it.text != null ? 'cue' : it.source != null ? 'clip' : 'pause';
+  return { i: 0, id: str(it.id), kind, track: str(it.track_id), s, e, src: str(it.duration_source), speaker: str(it.speaker),
+    provider: str(it.provider), voice: str(it.voice_id), text: str(it.text), source: str(it.source),
+    pushed: num(it.pushed_from_ms), open: it.open_ended === true, looped: it.looped === true };
+}
+function normWave(w) {
+  if (!isObj(w)) return null;
+  const mn = arr(w.min), mx = arr(w.max), n = Math.min(mn.length, mx.length), pps = num(w.points_per_second, 50);
+  if (!n || !(pps > 0)) return null;
+  const lo = new Float32Array(n), hi = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const a = clamp(num(mn[i], 0), -1, 1), b = clamp(num(mx[i], 0), -1, 1);
+    lo[i] = Math.min(a, b); hi[i] = Math.max(a, b);
+  }
+  return { pps, n, lo, hi };
+}
+/** Min/max mip levels (each half the previous resolution): cheap drawing at any zoom. */
+function pyramid(w) {
+  const levels = [w];
+  for (let L = w; L.n > 1;) {
+    const n = Math.ceil(L.n / 2), lo = new Float32Array(n), hi = new Float32Array(n);
+    for (let i = 0; i < n; i++) {
+      const a = 2 * i, b = Math.min(a + 1, L.n - 1);
+      lo[i] = Math.min(L.lo[a], L.lo[b]); hi[i] = Math.max(L.hi[a], L.hi[b]);
+    }
+    levels.push(L = { pps: L.pps / 2, n, lo, hi });
+  }
+  return levels;
+}
+/** Visible bars as flat [x, width, min, max, ...] in CSS px relative to `viewX`. */
+function waveBars(levels, pxPerSec, viewX, viewW, pitch = 3) {
+  const out = [];
+  if (!levels || !levels.length || !(pxPerSec > 0)) return out;
+  const base = levels[0], ppp = pxPerSec / base.pps;
+  if (ppp >= pitch) { // zoomed in: one bar per data point
+    const w = Math.max(1, ppp - Math.max(1, ppp * .25));
+    for (let i = Math.max(0, Math.floor(viewX / ppp)), end = Math.min(base.n, Math.ceil((viewX + viewW) / ppp)); i < end; i++) out.push(i * ppp - viewX, w, base.lo[i], base.hi[i]);
+    return out;
+  }
+  let L = base;
+  for (const lv of levels) { if (pitch * lv.pps / pxPerSec >= 1) L = lv; else break; }
+  const ppb = pitch * L.pps / pxPerSec;
+  for (let b = Math.max(0, Math.floor(viewX / pitch)), end = Math.ceil((viewX + viewW) / pitch); b < end; b++) {
+    const i0 = Math.floor(b * ppb);
+    if (i0 >= L.n) break;
+    let lo = 1, hi = -1;
+    for (let i = i0, i1 = Math.min(L.n, Math.max(i0 + 1, Math.floor((b + 1) * ppb))); i < i1; i++) { lo = Math.min(lo, L.lo[i]); hi = Math.max(hi, L.hi[i]); }
+    out.push(b * pitch - viewX, pitch - 1, lo, hi);
+  }
+  return out;
+}
+/** Keep only envelope points where the slope changes: [[index, dB], ...]. */
+function simplifyEnv(db, eps = .01) {
+  const out = [];
+  for (let i = 0, n = db.length; i < n; i++) if (i === 0 || i === n - 1 || Math.abs(db[i] - db[i - 1] - (db[i + 1] - db[i])) > eps) out.push([i, db[i]]);
+  return out;
+}
+/** Give each caption its words and display rows of {text, w} tokens (karaoke). */
+function linkWords(caps, words) {
+  for (const c of caps) {
+    const ws = [];
+    for (let k = bound(words, c.s - 1); k < words.length && words[k].s < c.e; k++) {
+      const w = words[k];
+      if (c.cue && w.cue ? c.cue === w.cue : c.track && w.track ? c.track === w.track : true) ws.push(w);
+    }
+    const toks = c.lines.map(l => l.split(/\s+/).filter(Boolean));
+    let k = 0;
+    c.words = ws;
+    c.rows = toks.flat().length === ws.length ? toks.map(l => l.map(text => ({ text, w: ws[k++] })))
+      : ws.length ? [ws.map(w => ({ text: w.text, w }))] : toks.map(l => l.map(text => ({ text, w: null })));
+  }
+}
+/** Any accepted JSON (payload, render report/manifest, plan, words.json) → view model. */
+function normalize(input, opt = {}) {
+  const kind = classify(input);
+  let p = isObj(input) ? input : {};
+  if (kind === 'report' || kind === 'plan') p = { report: input };
+  else if (kind === 'words') p = { captions: input.captions, words: input.words };
+  const rep = isObj(p.report) ? p.report : {}, out = isObj(rep.output) ? rep.output : null;
+  const items = arr(rep.items).map(normItem).filter(Boolean);
+  items.forEach((it, k) => { it.i = k; it.id = it.id || `item ${k + 1}`; it.track = it.track || '(no track)'; });
+  const wave = normWave(p.waveform), env = new Map(), duck = new Map();
+  for (const e of arr(p.envelopes)) {
+    const pps = isObj(e) && num(e.points_per_second, 50), db = isObj(e) ? arr(e.gain_db).map(v => Math.min(0, num(v, 0))) : [];
+    if (pps > 0 && db.length && str(e.track_id)) env.set(str(e.track_id), { pps, db });
+  }
+  for (const d of arr(rep.ducking)) if (isObj(d) && str(d.track_id)) duck.set(str(d.track_id), { mode: str(d.mode), depth: Math.abs(num(d.reduction_db, 0)),
+    triggers: arr(d.triggers).map(str).filter(Boolean), regions: arr(d.regions).filter(isObj).map(r => [num(r.start_ms), num(r.end_ms)]).filter(([a, b]) => has(a) && has(b) && b > a) });
+  const words = arr(p.words).map((w, i) => isObj(w) && { i, text: str(w.text).trim(), s: num(w.start_ms), e: num(w.end_ms), cue: str(w.cue_id), track: str(w.track_id), speaker: str(w.speaker) })
+    .filter(w => w && w.text && has(w.s)).map(w => { if (!(w.e >= w.s)) w.e = w.s; return w; }).sort(byStart);
+  let caps = arr(p.captions).map((c, i) => {
+    if (!isObj(c)) return null;
+    const lines = arr(c.lines).map(str).filter(Boolean), text = str(c.text) || lines.join(' ');
+    return { i, s: num(c.start_ms), e: num(c.end_ms), text, lines: lines.length ? lines : [text], speaker: str(c.speaker), cue: str(c.cue_id), track: str(c.track_id) };
+  }).filter(c => c && c.text && has(c.s) && has(c.e) && c.e > c.s).sort(byStart);
+  let dur = num(out && out.duration_ms);
+  if (!(dur > 0)) dur = num(rep.duration_ms);
+  if (!(dur > 0)) {
+    dur = maxOf([...env.values()], v => v.db.length / v.pps * 1000, maxOf([items, caps, words], l => maxOf(l, x => x.e, 1000), wave ? wave.n / wave.pps * 1000 : 0));
+  }
+  const tracks = [], byId = new Map();
+  const addTrack = (id, t) => { if (!byId.has(id)) { const tr = { id, type: '', gain: NaN, pan: NaN, mute: false, ...t }; byId.set(id, tr); tracks.push(tr); } };
+  for (const t of arr(rep.tracks)) if (isObj(t) && str(t.id)) addTrack(str(t.id), { type: str(t.type).toLowerCase(), gain: num(t.gain_db), pan: num(t.pan), mute: t.mute === true });
+  for (const id of [...items.map(it => it.track), ...duck.keys(), ...env.keys()]) addTrack(id, {});
+  const byTrack = new Map(tracks.map(t => [t.id, []]));
+  for (const it of items) byTrack.get(it.track).push(it);
+  for (const t of tracks) {
+    t.type = t.type || (byTrack.get(t.id).some(x => x.kind === 'cue') ? 'speech' : 'audio');
+    t.cls = TYPES.includes(t.type) ? t.type : 'other';
+  }
+  // No captions (e.g. a bare manifest): show each cue's text; words, if any, still link by cue id.
+  if (!caps.length) caps = items.filter(it => it.kind === 'cue' && it.text && it.e > it.s).map((it, i) => ({ i, s: it.s, e: it.e, text: it.text, lines: [it.text], speaker: it.speaker, cue: it.id, track: it.track }));
+  linkWords(caps, words);
+  return {
+    kind: kind || 'payload', dur, out, tracks, byTrack, trackById: byId, items, ids: new Map(items.map(it => [it.id, it])), duck, env, wave, caps, words,
+    title: str(p.title).trim() || str(rep.title).trim() || baseName(out && out.path).replace(/\.[^.]+$/, '') || 'Untitled render',
+    audio: str(p.audio) || (opt.embedded ? str(out && out.path) : ''),
+    loud: isObj(rep.loudness) ? rep.loudness : null, synth: isObj(rep.synthesis) ? rep.synthesis : null,
+    estimated: kind === 'plan' && rep.estimated !== false, levels: wave ? pyramid(wave) : null, maxCap: maxOf(caps, c => c.e - c.s, 0),
+    diags: arr(rep.diagnostics).filter(isObj).map(d => ({ sev: SEVS.includes(d.severity) ? d.severity : 'info', code: str(d.code), message: str(d.message),
+      path: str(d.path), line: num(d.line), column: num(d.column), hint: str(d.hint), related: arr(d.related).map(str).filter(Boolean) })),
+    files: isObj(rep.files) ? rep.files : {}
+  };
+}
+const api = { TOKEN, fmtTime, fmtNum, fmtSigned, fmtLen, fmtMs, tickStep, classify, safeHref, normalize, activeCaps, pyramid, waveBars, simplifyEnv };
+if (typeof document === 'undefined' || typeof window === 'undefined') { globalThis.SonicCraftPreview = api; return; }
+window.SonicCraftPreview = api;
+
+// ---------- DOM ----------
+const el = {};
+for (const n of document.querySelectorAll('[id]')) el[n.id] = n;
+const audio = el.audio, PLAY_D = el.playIcon.getAttribute('d'), PAUSE_D = 'M7 5h3.4v14H7zM13.6 5H17v14h-3.4z';
+const ICON = {
+  good: '<circle cx="8" cy="8" r="7"/><path d="M4.7 8.3l2.1 2.1 4.5-4.6"/>',
+  warning: '<path d="M8 1.5l7 12.4H1z"/><path d="M8 6.2v3.3M8 11.7v.1"/>',
+  error: '<circle cx="8" cy="8" r="7"/><path d="M5.6 5.6l4.8 4.8M10.4 5.6l-4.8 4.8"/>',
+  info: '<circle cx="8" cy="8" r="6.3"/><path d="M8 7.3v3.9M8 4.9v.1"/>'
+};
+function h(tag, props, ...kids) {
+  const n = document.createElement(tag);
+  for (const k in props) {
+    const v = props[k];
+    if (v == null || v === false) continue;
+    if (k === 'class') n.className = v;
+    else if (k === 'text') n.textContent = v;
+    else if (k === 'style') n.style.cssText = v;
+    else if (k === 'onclick') n.addEventListener('click', v);
+    else n.setAttribute(k, v);
+  }
+  for (const c of kids.flat(Infinity)) if (c != null && c !== false) n.append(c);
+  return n;
+}
+function svg(tag, attrs) {
+  const n = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  return n;
+}
+function icon(name) { const s = svg('svg', { viewBox: '0 0 16 16', class: 'ic ic-' + name, 'aria-hidden': 'true' }); s.innerHTML = ICON[name]; return s; } // constant markup only
+
+let M = null, embedded = false, zoom = 1, pps = 1, ts = tickStep(1), raf = 0, rowEls = [], bars = [], barsDirty = true, waveCut = NaN;
+let capKey = null, capEls = [], activeRows = new Set(), lastAria = -1, userScrollAt = -1e9, progScrollAt = -1e9, tipKey = null, drag = null;
+const C = {}, view = { x: 0, w: 0, dpr: 0 };
+// Files opened in this tab; `embedded` stays true while the main data is the payload baked into the page.
+const loaded = { main: null, extra: null, audio: null, embedded: false };
+const durS = () => (M ? M.dur / 1000 : 1);
+const pct = ms => (clamp(ms, 0, M.dur) / M.dur * 100).toFixed(4) + '%';
+const spanCss = (a, b) => `left:${pct(a)};width:${pct(clamp(b, 0, M.dur) - clamp(a, 0, M.dur))}`;
+function readColors() {
+  const cs = getComputedStyle(document.documentElement);
+  for (const k of ['ink-3', 'line', 'line-2', 'wave', 'wave-on']) C[k] = cs.getPropertyValue('--' + k).trim();
+  C.font = '11px ' + cs.getPropertyValue('--font').trim();
+}
+
+// ---------- playback: the <audio> element when there is audio, otherwise a silent clock ----------
+const P = {
+  mode: 'virtual', vt: 0, v0: 0, vplay: false, name: '',
+  playing() { return this.mode === 'audio' ? !audio.paused && !audio.ended : this.vplay; },
+  time() { return this.mode === 'audio' ? audio.currentTime || 0 : this.vplay ? Math.min(this.vt + (performance.now() - this.v0) / 1000, durS()) : this.vt; },
+  play() {
+    if (this.mode === 'audio') {
+      const pr = audio.play();
+      if (pr) pr.catch(err => { if (err && err.name === 'NotAllowedError') note('The browser blocked playback. Press play again.'); });
+    } else {
+      if (this.vt >= durS() - .01) this.vt = 0;
+      this.v0 = performance.now(); this.vplay = true; syncPlay();
+    }
+  },
+  pause() { if (this.mode === 'audio') audio.pause(); else { this.vt = this.time(); this.vplay = false; syncPlay(); } },
+  seek(t) {
+    this.vt = t; this.v0 = performance.now();
+    if (this.mode === 'audio') try { audio.currentTime = t; } catch (_) { /* applied once seekable */ }
+  }
+};
+const toggle = () => (P.playing() ? P.pause() : P.play());
+function note(text) { el.anote.hidden = !text; el.anoteText.textContent = text || ''; }
+function syncPlay() {
+  const on = P.playing(), label = on ? 'Pause' : 'Play';
+  el.play.setAttribute('aria-label', label);
+  el.play.title = label + ' (Space)';
+  el.playIcon.setAttribute('d', on ? PAUSE_D : PLAY_D);
+  kick();
+}
+function setAudio(src, name) {
+  const t = P.time();
+  P.pause();
+  Object.assign(P, { mode: 'audio', name, vt: t, vplay: false });
+  audio.src = src;
+  try { audio.currentTime = t; } catch (_) { /* applied once metadata loads */ }
+  note('');
+  syncPlay();
+}
+function noAudio(text) {
+  P.pause();
+  P.mode = 'virtual';
+  if (audio.getAttribute('src')) { audio.removeAttribute('src'); audio.load(); }
+  note(text);
+  syncPlay();
+}
+for (const ev of ['play', 'pause', 'ended']) audio.addEventListener(ev, syncPlay);
+audio.addEventListener('seeked', () => kick());
+audio.addEventListener('timeupdate', () => { if (!P.playing()) kick(); });
+audio.addEventListener('loadedmetadata', () => kick());
+audio.addEventListener('error', () => {
+  if (P.mode !== 'audio' || !audio.getAttribute('src')) return;
+  P.mode = 'virtual';
+  note(`Could not load “${P.name}”. Play runs the timeline silently.`);
+  syncPlay();
+});
+
+// ---------- frame loop ----------
+function kick() { if (!raf) raf = requestAnimationFrame(tick); }
+function tick() {
+  raf = 0;
+  if (!M) return;
+  let t = P.time();
+  if (P.mode === 'virtual' && P.vplay && t >= durS()) { P.vt = t = durS(); P.vplay = false; syncPlay(); }
+  const x = t * pps;
+  el.ph.style.transform = `translateX(${x.toFixed(1)}px)`;
+  drawWave(x);
+  el.now.textContent = fmtTime(t, 2);
+  if (Math.floor(t) !== lastAria) {
+    lastAria = Math.floor(t);
+    el.scroll.setAttribute('aria-valuenow', lastAria);
+    el.scroll.setAttribute('aria-valuetext', `${fmtTime(t, 0)} of ${fmtTime(durS(), 0)}`);
+  }
+  paintCaps(t * 1000);
+  paintRows(t * 1000);
+  if (P.playing()) {
+    const L = el.scroll.scrollLeft;
+    if (performance.now() - userScrollAt > 1500 && (x < L || x > L + view.w * .92)) setScroll(x - view.w * .08);
+    kick();
+  }
+}
+
+// ---------- geometry ----------
+const maxZoom = () => Math.max(1, Math.min(4000 * durS() / view.w, 1.6e7 / view.w));
+function fitCanvas(cv, V) {
+  const r = view.dpr, w = Math.round(V * r), hh = Math.round(cv.clientHeight * r);
+  cv.style.width = V + 'px';
+  if (cv.width !== w) cv.width = w;
+  if (cv.height !== hh) cv.height = hh;
+  cv.getContext('2d').setTransform(r, 0, 0, r, 0, 0);
+}
+function layout() {
+  const V = M && el.scroll.clientWidth;
+  if (!V) return;
+  view.w = V; view.dpr = window.devicePixelRatio || 1;
+  zoom = clamp(zoom, 1, maxZoom());
+  const W = Math.max(V, Math.round(V * zoom));
+  pps = W / durS();
+  el.content.style.width = W + 'px';
+  fitCanvas(el.ruler, V);
+  fitCanvas(el.wave, V);
+  ts = tickStep(pps);
+  el.lanes.style.backgroundSize = `${ts.major * pps}px 100%`;
+  for (const b of el.lanes.querySelectorAll('[data-i]')) {
+    const it = M.items[b.dataset.i];
+    b.classList.toggle('tight', (it.e - it.s) / 1000 * pps < (it.kind === 'pause' ? 46 : 30));
+  }
+  el.zlvl.textContent = (zoom < 10 ? zoom.toFixed(1) : Math.round(zoom)) + '×';
+  el.zout.disabled = zoom <= 1.0001;
+  el.zin.disabled = zoom >= maxZoom() - 1e-6;
+  onScroll();
+}
+function onScroll() { view.x = el.scroll.scrollLeft; barsDirty = true; drawRuler(); kick(); }
+function setScroll(v) { progScrollAt = performance.now(); el.scroll.scrollLeft = v; onScroll(); }
+/** Zoom keeping the time under viewport x `ax` fixed (default: visible playhead, else centre). */
+function setZoom(z, ax) {
+  if (!M || !view.w) return;
+  z = clamp(z, 1, maxZoom());
+  if (Math.abs(z - zoom) < 1e-9) return;
+  if (ax == null) { const px = P.time() * pps - el.scroll.scrollLeft; ax = px >= 0 && px <= view.w ? px : view.w / 2; }
+  const t = (el.scroll.scrollLeft + ax) / pps;
+  zoom = z;
+  layout();
+  setScroll(t * pps - ax);
+}
+function seek(t, reveal = true) {
+  if (!M) return;
+  t = clamp(t, 0, durS());
+  P.seek(t);
+  const x = t * pps, L = el.scroll.scrollLeft;
+  if (reveal && (x < L || x > L + view.w)) setScroll(x - view.w / 2);
+  kick();
+}
+const timeAt = clientX => clamp((clientX - el.content.getBoundingClientRect().left) / pps, 0, durS());
+
+// ---------- canvases ----------
+const visible = () => M && view.w && pps > 0 && isFinite(pps);
+function drawRuler() {
+  if (!visible()) return;
+  const cv = el.ruler, ctx = cv.getContext('2d'), V = view.w, H = cv.clientHeight, { major, div, dp } = ts, x0 = view.x;
+  ctx.clearRect(0, 0, V, H);
+  ctx.fillStyle = C['line-2'];
+  ctx.fillRect(0, H - 1, V, 1);
+  const mpx = major / div * pps;
+  if (mpx >= 5) for (let k = Math.floor(x0 / mpx), x; (x = Math.round(k * mpx - x0)) <= V; k++) ctx.fillRect(x, H - 5, 1, 4);
+  ctx.font = C.font;
+  ctx.textBaseline = 'middle';
+  for (let k = Math.floor(x0 / (major * pps)), x; (x = Math.round(k * major * pps - x0)) <= V; k++) {
+    ctx.fillStyle = C['line-2'];
+    ctx.fillRect(x, H - 9, 1, 8);
+    ctx.fillStyle = C['ink-3'];
+    if (x >= 0) ctx.fillText(fmtTime(k * major, dp), x + 4, H / 2 - 2);
+  }
+}
+function drawWave(px) {
+  const cut = px - view.x;
+  if (!visible() || (!barsDirty && Math.abs(cut - waveCut) < .5)) return;
+  if (barsDirty) { bars = waveBars(M.levels, pps, view.x, view.w); barsDirty = false; }
+  waveCut = cut;
+  const cv = el.wave, ctx = cv.getContext('2d'), V = view.w, H = cv.clientHeight, step = ts.major * pps;
+  ctx.clearRect(0, 0, V, H);
+  ctx.fillStyle = C.line;
+  ctx.fillRect(0, 0, V, 1);
+  for (let k = Math.ceil(view.x / step), x; (x = Math.round(k * step - view.x)) <= V; k++) ctx.fillRect(x, 1, 1, H - 1);
+  const mid = Math.round(H / 2) + .5, amp = H / 2 - 7;
+  if (!bars.length) {
+    ctx.fillRect(0, mid, V, 1);
+    ctx.fillStyle = C['ink-3']; ctx.font = C.font; ctx.textBaseline = 'middle';
+    ctx.fillText('No waveform in this preview', 10, mid - 12);
+    return;
+  }
+  for (const played of [false, true]) {
+    ctx.fillStyle = played ? C['wave-on'] : C.wave;
+    for (let i = 0; i < bars.length; i += 4) {
+      const x = bars[i], w = bars[i + 1], y0 = mid - bars[i + 3] * amp;
+      if ((x + w / 2 <= cut) === played) ctx.fillRect(x, y0, w, Math.max(1, mid - bars[i + 2] * amp - y0));
+    }
+  }
+}
+
+// ---------- builders ----------
+function stat(label, value, sub, status, title) {
+  el.stats.append(h('div', { class: 'st', title }, h('dt', { text: label }), h('dd', { class: 'v', text: value }),
+    h('dd', { class: 'n' }, status && icon(status), h('span', { text: sub }))));
+}
+function buildHeader() {
+  const o = M.out, L = M.loud, S = M.synth, name = baseName(o && o.path), href = embedded && safeHref(o && o.path);
+  el.title.textContent = M.title;
+  document.title = `${M.title} — SonicCraft preview`;
+  el.sub.textContent = '';
+  if (name) el.sub.append(href ? h('a', { href, download: name, text: name }) : name, ' rendered by SonicCraft');
+  else el.sub.append(M.kind === 'plan' ? 'Dry-run plan from SonicCraft' : 'SonicCraft render');
+  el.banner.hidden = !M.estimated;
+  el.banner.textContent = 'Dry run: nothing is rendered yet, and “estimate” durations can be off by about 15 %.';
+  el.stats.textContent = '';
+  stat('Duration', fmtTime(durS(), 2), `${plural(M.items.filter(i => i.kind !== 'pause').length, 'item')} on ${plural(M.tracks.length, 'track')}`);
+  if (L) {
+    const I = num(L.integrated_lufs), T = num(L.target_lufs), dI = I - T, tt = fmtNum(T, 1);
+    const [sub, st] = !has(I) ? ['silent output', 'warning'] : L.normalized === false ? [`normalization off (target ${tt})`] : !has(T) ? ['']
+      : Math.abs(dI) <= .5 ? [`on target of ${tt}`, 'good'] : [`${fmtNum(Math.abs(dI), 1)} LU ${dI < 0 ? 'below' : 'above'} the ${tt} target`, 'warning'];
+    stat('Integrated loudness', has(I) ? fmtNum(I, 1) + ' LUFS' : '—', sub, st,
+      `Gain ${fmtSigned(num(L.gain_db), 1)} dB, limiter ${fmtNum(-Math.abs(num(L.limiter_max_reduction_db, 0)), 1)} dB at most, ${plural(num(L.iterations, 0), 'iteration')}`);
+    const tp = num(L.true_peak_dbtp), ceil = num(L.true_peak_target_dbtp), over = tp - ceil, v = has(tp) ? fmtNum(tp, 1) + ' dBTP' : '—';
+    if (!has(over)) stat('True peak', v, '');
+    else stat('True peak', v, over <= .05 ? `below the ${fmtNum(ceil, 1)} ceiling` : `${fmtNum(over, 1)} dB over the ${fmtNum(ceil, 1)} ceiling`, over <= .05 ? 'good' : 'error');
+    const lra = num(L.loudness_range_lu), sp = num(L.sample_peak_dbfs);
+    stat('Loudness range', has(lra) ? fmtNum(lra, 1) + ' LU' : '—', has(sp) ? `sample peak ${fmtNum(sp, 1)} dBFS` : '');
+  } else stat('Loudness', '—', M.kind === 'plan' ? 'measured when rendered' : 'not in this report');
+  if (o) {
+    const kbps = num(o.bitrate_bps, num(o.bitrate)) / 1000, bd = num(o.bit_depth), sr = num(o.sample_rate), ch = num(o.channels), by = num(o.bytes);
+    const rate = sr > 0 ? `${+(sr / 1000).toFixed(3)} kHz${ch === 1 ? ' mono' : ch === 2 ? ' stereo' : ch > 0 ? ` ${ch} ch` : ''}` : '';
+    stat('Format', (str(o.format).toUpperCase() || 'Audio') + (kbps > 0 ? ` ${Math.round(kbps)} kbps` : bd > 0 ? ` ${bd}-bit` : ''), [rate, by > 0 && fmtBytes(by)].filter(Boolean).join(', '));
+  }
+  const hits = num(S && S.cache_hits, num(S && S.cached)), called = arr(S && S.providers_called).map(str).filter(Boolean);
+  if (has(hits)) stat('TTS cache', `${hits} of ${num(S.cues, 0)}`, 'cues from cache' + (S.cached != null ? '' : called.length ? ', called ' + called.join(', ') : ', no provider calls'));
+}
+function buildFiles() {
+  const f = M.files, paths = [...arr(f.subtitles).map(s => isObj(s) && s.path), f.manifest, ...arr(f.stems).map(s => isObj(s) && s.path)].map(str).filter(Boolean);
+  el.files.textContent = 'SonicCraft preview';
+  if (!embedded || !paths.length) return;
+  el.files.append('. Side files: ');
+  paths.forEach((p, i) => { const href = safeHref(p); el.files.append(i ? ', ' : '', href ? h('a', { href, text: baseName(p) }) : baseName(p)); });
+}
+function itemEl(it) {
+  const style = spanCss(it.s, it.e);
+  if (it.kind === 'pause') return h('div', { class: 'pause', style, 'data-i': it.i }, h('span', { text: fmtMs(it.e - it.s) }));
+  // One sticky label per block: it stays readable while the block's start is scrolled out of view.
+  return h('div', { class: 'blk ' + it.kind, style, 'data-i': it.i }, it.kind === 'cue' ? h('span', null, h('b', { text: it.speaker || it.id }), it.text)
+    : [h('span', null, it.looped && h('i', { text: '↻ ' }), baseName(it.source) || it.id), it.open && h('i', { text: '⇥' })]);
+}
+function envSvg(env, d) {
+  const depth = maxOf(env.db, v => -v, Math.max(1, d ? d.depth : 0)), shown = Math.max(1, Math.min(env.db.length - 1, durS() * env.pps));
+  const s = svg('svg', { class: 'env', viewBox: `0 0 ${shown} 100`, preserveAspectRatio: 'none', 'aria-hidden': 'true', style: `width:${pct(shown / env.pps * 1000)}` });
+  s.append(svg('polyline', { points: simplifyEnv(env.db).map(([i, v]) => `${i},${(14 + clamp(-v / depth, 0, 1) * 72).toFixed(2)}`).join(' ') }));
+  return s;
+}
+function buildLanes() {
+  el.labels.textContent = el.lanes.textContent = '';
+  el.labels.append(h('div', { class: 'lb lb-ruler' }), h('div', { class: 'lb lb-wave' }, h('b', { text: 'Master' }), h('small', { text: M.wave ? 'mono mix' : 'no waveform' })));
+  if (!M.tracks.length) {
+    el.labels.append(h('div', { class: 'lb' }, h('small', { text: 'No tracks' })));
+    el.lanes.append(h('div', { class: 'lane' }));
+  }
+  for (const tr of M.tracks) {
+    const its = M.byTrack.get(tr.id), d = M.duck.get(tr.id), env = M.env.get(tr.id);
+    const meta = [d && d.depth ? `ducked ${MINUS}${fmtNum(d.depth, 0)} dB` : plural(its.filter(x => x.kind !== 'pause').length, tr.cls === 'speech' ? 'cue' : 'clip'), tr.mute && 'muted'];
+    const tip = [`${tr.id} (${tr.type})`, has(tr.gain) && `gain ${fmtSigned(tr.gain, 1)} dB`, tr.pan && has(tr.pan) && `pan ${fmtSigned(tr.pan, 2)}`,
+      d && `ducked by ${d.triggers.join(', ') || 'other tracks'}${d.mode ? ` (${d.mode})` : ''}`];
+    el.labels.append(h('div', { class: 'lb t-' + tr.cls, title: tip.filter(Boolean).join(', ') }, h('b', { class: 'ell', text: tr.id }),
+      h('span', { class: 'lb-row' }, h('span', { class: 'badge', text: tr.type }), h('small', { class: 'ell', text: meta.filter(Boolean).join(', ') }))));
+    const lane = h('div', { class: `lane t-${tr.cls}${tr.mute ? ' muted' : ''}`, 'data-track': tr.id }, its.map(itemEl));
+    for (const it of its) if (it.kind === 'cue' && has(it.pushed) && Math.abs(it.pushed - it.s) > 1)
+      lane.append(h('div', { class: 'push', style: spanCss(Math.min(it.pushed, it.s), Math.max(it.pushed, it.s)) + (it.pushed > it.s ? ';transform:scaleX(-1)' : '') }));
+    if (d) for (const [a, b] of d.regions) lane.append(h('div', { class: 'duck', style: spanCss(a, b) }));
+    if (env) lane.append(envSvg(env, d));
+    el.lanes.append(lane);
+  }
+}
+function buildTable() {
+  el.rows.textContent = '';
+  rowEls = [];
+  el.nItems.textContent = M.items.length;
+  if (!M.items.length) el.rows.append(h('tr', null, h('td', { colspan: 7, class: 'empty', text: 'No items in this report.' })));
+  for (const it of M.items) {
+    const tr = M.trackById.get(it.track), txt = h('td', { class: 'txt' });
+    if (it.kind === 'cue') txt.append(it.speaker ? h('b', { text: it.speaker + ' ' }) : '', it.text, has(it.pushed) ? h('span', { class: 'note', text: `pushed from ${fmtTime(it.pushed / 1000, 3)}` }) : '');
+    else if (it.kind === 'clip') {
+      const f = [it.looped && 'looped', it.open && 'runs to the end'].filter(Boolean);
+      txt.append(h('code', { text: it.source || it.id }), f.length ? h('span', { class: 'note', text: f.join(', ') }) : '');
+    }
+    el.rows.append(rowEls[it.i] = h('tr', { tabindex: 0, 'data-i': it.i, class: 't-' + (tr ? tr.cls : 'other') },
+      h('td', null, h('code', { text: it.id }), h('span', { class: 'kind', text: it.kind })),
+      h('td', { class: 'trk', text: it.track }),
+      h('td', { class: 'num', text: fmtTime(it.s / 1000, 3) }),
+      h('td', { class: 'num c-end', text: fmtTime(it.e / 1000, 3) }),
+      h('td', { class: 'num', text: fmtLen(it.e - it.s) }),
+      h('td', null, h('span', { class: 'src', text: it.src || '—', title: SRC[it.src] })), txt));
+  }
+}
+function buildDiags() {
+  const n = { error: 0, warning: 0, info: 0 };
+  el.diags.textContent = '';
+  for (const d of M.diags) {
+    n[d.sev]++;
+    const where = d.path || has(d.line) ? h('p', { class: 'dg-sub' }, d.path ? h('code', { text: d.path }) : '', has(d.line) ? `${d.path ? ', ' : ''}line ${d.line}${has(d.column) ? ':' + d.column : ''}` : '') : null;
+    const rel = d.related.length ? h('p', { class: 'dg-sub' }, 'Related: ', d.related.map(id => (M.ids.has(id)
+      ? h('button', { class: 'chip', type: 'button', text: id, title: 'Go to ' + id, onclick: () => seekItem(M.ids.get(id)) }) : h('code', { text: id + ' ' })))) : null;
+    el.diags.append(h('li', { class: 'dg' }, icon(d.sev), h('div', null,
+      h('p', { class: 'dg-head' }, h('b', { text: d.sev[0].toUpperCase() + d.sev.slice(1) }), d.code && h('code', { text: d.code })),
+      h('p', { class: 'dg-msg' }, rich(d.message)), where, d.hint && h('p', { class: 'dg-sub' }, 'Hint: ', rich(d.hint)), rel)));
+  }
+  el.nDiag.textContent = [n.error && plural(n.error, 'error'), n.warning && plural(n.warning, 'warning'), n.info && n.info + ' info'].filter(Boolean).join(', ') || 'none';
+  if (!M.diags.length) el.diags.append(h('li', { class: 'dg none', text: 'No diagnostics in this report.' }));
+}
+/** Diagnostic text with `backticked` spans as <code> (the engine quotes ids and fixes that way). */
+const rich = t => (t.split('`').length % 2 ? t.split('`').map((x, i) => (i % 2 ? h('code', { text: x }) : x)) : t);
+function seekItem(it) { if (it) { seek(it.s / 1000); revealRow(rowEls[it.i]); } }
+function revealRow(r) {
+  const tw = el.tw, top = r ? r.offsetTop : 0;
+  if (r && tw.scrollHeight > tw.clientHeight + 1 && (top < tw.scrollTop + 34 || top + r.offsetHeight > tw.scrollTop + tw.clientHeight)) tw.scrollTop = top - 42;
+}
+
+// ---------- per-frame painters ----------
+function paintCaps(ms) {
+  let act = activeCaps(M.caps, M.maxCap, ms);
+  const k = bound(M.caps, ms, true), next = !act.length && k < M.caps.length && M.caps[k].s - ms <= 1500; // lead-in: coming caption, dimmed
+  if (next) act = [k];
+  const key = act.join() + (next ? 'n' : '');
+  if (key !== capKey) {
+    capKey = key;
+    el.caps.textContent = '';
+    capEls = act.map(ci => {
+      const c = M.caps[ci], spans = [];
+      const rows = c.rows.map(row => h('span', { class: 'ln' }, row.map((tok, j) => {
+        if (!tok.w) return (j ? ' ' : '') + tok.text;
+        const s = h('span', { class: 'w', text: tok.text });
+        spans.push({ el: s, w: tok.w, st: 0 });
+        return j ? [' ', s] : s;
+      })));
+      el.caps.append(h('div', { class: 'cap' + (spans.length ? ' karaoke' : '') + (next ? ' next' : '') }, c.speaker && h('p', { class: 'cap-who', text: c.speaker }), h('p', { class: 'cap-text' }, rows)));
+      return spans;
+    });
+    if (!M.caps.length) el.caps.append(h('p', { class: 'cap-none', text: 'No captions in this preview.' }));
+  }
+  for (const spans of capEls) for (const s of spans) {
+    const st = ms >= s.w.e ? 2 : ms >= s.w.s ? 1 : 0;
+    if (st !== s.st) s.el.className = ['w', 'w now', 'w done'][s.st = st];
+  }
+}
+function paintRows(ms) {
+  const now = new Set();
+  let lead = null;
+  for (const it of M.items) if (it.s <= ms && ms < it.e) { now.add(it.i); if (it.kind === 'cue' && (!lead || it.s >= lead.s)) lead = it; }
+  for (const i of activeRows) if (!now.has(i)) { rowEls[i].classList.remove('on'); rowEls[i].removeAttribute('aria-current'); }
+  for (const i of now) if (!activeRows.has(i)) { rowEls[i].classList.add('on'); rowEls[i].setAttribute('aria-current', 'true'); }
+  if (lead && P.playing() && !activeRows.has(lead.i)) revealRow(rowEls[lead.i]);
+  activeRows = now;
+}
+
+// ---------- hover: time readout + tooltip ----------
+function hover(e) {
+  const x = e.clientX - el.content.getBoundingClientRect().left, t = clamp(x / pps, 0, durS()), tgt = e.target instanceof Element ? e.target : null;
+  el.hov.hidden = false;
+  el.hov.style.transform = `translateX(${x.toFixed(1)}px)`;
+  el.hov.classList.toggle('flip', x - view.x > view.w - 90);
+  el.hovT.textContent = fmtTime(t, ts.major < .1 ? 3 : 2);
+  const b = tgt && tgt.closest('[data-i]'), lane = tgt && tgt.closest('.lane[data-track]');
+  const it = b && M.items[b.dataset.i], tid = lane ? lane.dataset.track : '', d = M.duck.get(tid), env = M.env.get(tid);
+  if (!it && !d && !env) return hideTip();
+  const key = (it ? it.i : '') + '|' + tid, tip = el.tip;
+  if (key !== tipKey) {
+    tipKey = key;
+    tip.textContent = '';
+    const flags = it ? [it.looped && 'looped', it.open && 'runs to the end of the timeline', it.provider && it.provider + (it.voice ? ', voice ' + it.voice : '')].filter(Boolean) : [];
+    if (it) tip.append(...[h('p', null, h('b', { text: it.id }), h('span', { class: 'k', text: ` ${it.kind} on ${it.track}` })),
+      it.kind === 'cue' && it.text && h('p', null, it.speaker && h('b', { text: it.speaker + ': ' }), it.text),
+      it.kind === 'clip' && it.source && h('p', null, h('code', { text: it.source })),
+      h('p', { class: 'k', text: `${fmtTime(it.s / 1000, 3)} to ${fmtTime(it.e / 1000, 3)} (${fmtLen(it.e - it.s)})${SRC[it.src] ? ', ' + SRC[it.src] : ''}` }),
+      flags.length && h('p', { class: 'k', text: flags.join('; ') }),
+      has(it.pushed) && h('p', { class: 'k', text: `Moved from ${fmtTime(it.pushed / 1000, 3)} by the speech overlap policy` })].filter(Boolean));
+    if (d || env) tip.append(h('p', { class: 'k duck-at' }));
+  }
+  const dl = tip.querySelector('.duck-at');
+  if (dl) {
+    const g = env ? env.db[clamp(Math.round(t * env.pps), 0, env.db.length - 1)] : d.regions.some(([a, z]) => t * 1000 >= a && t * 1000 < z) ? -d.depth : 0;
+    dl.textContent = `Ducking gain at ${fmtTime(t, 2)}: ${fmtNum(g, 1)} dB`;
+  }
+  tip.hidden = false;
+  const r = tip.getBoundingClientRect();
+  let lx = e.clientX + 14, ly = e.clientY + 16;
+  if (lx + r.width > innerWidth - 8) lx = e.clientX - r.width - 14;
+  if (ly + r.height > innerHeight - 8) ly = e.clientY - r.height - 12;
+  tip.style.transform = `translate(${Math.max(8, lx)}px,${Math.max(8, ly)}px)`;
+}
+function hideTip() { el.tip.hidden = true; tipKey = null; }
+
+// ---------- loading ----------
+function start(model, isEmbedded) {
+  M = model;
+  embedded = isEmbedded;
+  el.loader.hidden = true;
+  el.app.hidden = false;
+  buildHeader(); buildLanes(); buildTable(); buildDiags(); buildFiles();
+  capKey = null; activeRows = new Set(); lastAria = -1; zoom = 1;
+  hideTip();
+  el.dur.textContent = fmtTime(durS(), 2);
+  el.scroll.setAttribute('aria-valuemax', Math.round(durS()));
+  const src = isEmbedded && safeHref(M.audio);
+  if (loaded.audio) setAudio(loaded.audio.url, loaded.audio.name);
+  else if (src) setAudio(src, baseName(M.audio));
+  else noAudio(isEmbedded ? 'This preview has no audio file. Play runs the timeline silently.'
+    : `Choose ${M.audio ? `“${baseName(M.audio)}”` : 'the rendered audio'} to listen. Until then, play runs silently.`);
+  layout();
+  applyHash();
+}
+/** `#t=12.5` seeks, `#zoom=4` zooms (handy for links and headless screenshots). */
+function applyHash() {
+  const z = /[#&]zoom=([\d.]+)/.exec(location.hash), t = /[#&]t=([\d.]+)/.exec(location.hash);
+  if (z) setZoom(+z[1]);
+  if (t) seek(+t[1]);
+}
+function showLoader(msg) {
+  el.app.hidden = true;
+  el.loader.hidden = false;
+  el.lstatus.textContent = msg || '';
+}
+const isAudioFile = f => /^audio\//.test(f.type) || /\.(mp3|wav|flac|ogg|oga|opus|m4a|aac|aif|aiff|webm)$/i.test(f.name);
+async function handleFiles(files) {
+  const msgs = [];
+  let gotJson = false, audioFile = null;
+  for (const f of Array.from(files || [])) {
+    if (isAudioFile(f)) { audioFile = f; continue; }
+    if (!/\.json$/i.test(f.name) && !/json/.test(f.type)) { msgs.push(`${f.name} is neither JSON nor audio.`); continue; }
+    let j;
+    try { j = JSON.parse(await f.text()); } catch (err) { msgs.push(`${f.name} is not valid JSON (${err.message}).`); continue; }
+    const k = classify(j);
+    if (!k) msgs.push(`${f.name} is not a SonicCraft preview, render report, plan or captions file.`);
+    else if (k === 'words') loaded.extra = j;
+    else Object.assign(loaded, { main: j, embedded: false });
+    gotJson = gotJson || !!k;
+  }
+  if (audioFile) {
+    if (loaded.audio) URL.revokeObjectURL(loaded.audio.url);
+    loaded.audio = { url: URL.createObjectURL(audioFile), name: audioFile.name };
+  }
+  if (gotJson) {
+    const m = loaded.main, x = loaded.extra, p = m ? (classify(m) === 'payload' ? { ...m } : { report: m }) : {};
+    if (x) Object.assign(p, { captions: x.captions, words: x.words });
+    start(normalize(classify(p) ? p : { report: {} }, { embedded: loaded.embedded }), loaded.embedded);
+  } else if (audioFile && M) setAudio(loaded.audio.url, loaded.audio.name);
+  if (!M) el.lstatus.textContent = [...msgs, audioFile ? `Audio ready: ${audioFile.name}. Now choose the report JSON.` : ''].filter(Boolean).join('\n');
+  else if (msgs.length) note(msgs.join(' '));
+}
+
+// ---------- events ----------
+el.play.addEventListener('click', toggle);
+el.zin.addEventListener('click', () => setZoom(zoom * 2));
+el.zout.addEventListener('click', () => setZoom(zoom / 2));
+el.zfit.addEventListener('click', () => setZoom(1, 0));
+for (const id of ['pickJson', 'pickAudio', 'pickAudio2']) el[id].addEventListener('change', e => { handleFiles(e.target.files).finally(() => { e.target.value = ''; }); });
+el.scroll.addEventListener('scroll', () => { if (performance.now() - progScrollAt > 150) userScrollAt = performance.now(); onScroll(); }, { passive: true });
+el.scroll.addEventListener('wheel', e => {
+  if (!e.ctrlKey && !e.metaKey) return;
+  e.preventDefault();
+  setZoom(zoom * Math.exp(-e.deltaY * (e.deltaMode === 1 ? .05 : .002)), e.clientX - el.scroll.getBoundingClientRect().left);
+}, { passive: false });
+el.content.addEventListener('pointerdown', e => {
+  if (e.button !== 0) return;
+  drag = { touch: e.pointerType === 'touch', x: e.clientX, y: e.clientY };
+  if (drag.touch) return; // touch: a tap seeks on pointerup, a swipe scrolls natively
+  try { el.content.setPointerCapture(e.pointerId); } catch (_) { /* synthetic event */ }
+  seek(timeAt(e.clientX), false);
+});
+el.content.addEventListener('pointermove', e => {
+  if (drag && !drag.touch) seek(timeAt(e.clientX), false);
+  if (e.pointerType !== 'touch') hover(e);
+});
+el.content.addEventListener('pointerup', e => {
+  if (drag && drag.touch && Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 10) seek(timeAt(e.clientX), false);
+  drag = null;
+});
+el.content.addEventListener('pointercancel', () => { drag = null; });
+el.content.addEventListener('pointerleave', () => { el.hov.hidden = true; hideTip(); });
+const rowOf = e => e.target instanceof Element && e.target.closest('tr[data-i]');
+el.rows.addEventListener('click', e => { const r = rowOf(e); if (r) seekItem(M.items[r.dataset.i]); });
+el.rows.addEventListener('keydown', e => { const r = rowOf(e); if (r && e.key === 'Enter') { e.preventDefault(); seekItem(M.items[r.dataset.i]); } });
+document.addEventListener('keydown', e => {
+  if (!M || el.app.hidden || e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+  const tg = e.target instanceof Element ? e.target : document.body, tag = tg.tagName, step = e.shiftKey ? 1 : 5;
+  if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag) || tg.isContentEditable) return;
+  switch (e.key) {
+    case ' ': if (/^(BUTTON|A|SUMMARY|LABEL)$/.test(tag)) return; toggle(); break; // let focused controls activate
+    case 'ArrowLeft': seek(P.time() - step); break;
+    case 'ArrowRight': seek(P.time() + step); break;
+    case 'Home': seek(0); break;
+    case 'End': seek(durS()); break;
+    case '+': case '=': setZoom(zoom * 2); break;
+    case '-': case '_': setZoom(zoom / 2); break;
+    case '0': setZoom(1, 0); break;
+    default: return;
+  }
+  e.preventDefault();
+});
+let dragDepth = 0;
+const hasFiles = e => !!e.dataTransfer && Array.from(e.dataTransfer.types || []).includes('Files');
+const dragOff = () => { dragDepth = 0; document.body.classList.remove('drag'); };
+addEventListener('dragenter', e => { if (hasFiles(e)) { dragDepth++; document.body.classList.add('drag'); } });
+addEventListener('dragover', e => { if (hasFiles(e)) { e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; } });
+addEventListener('dragleave', () => { if (--dragDepth <= 0) dragOff(); });
+addEventListener('drop', e => { if (hasFiles(e)) { e.preventDefault(); dragOff(); handleFiles(e.dataTransfer.files); } });
+addEventListener('hashchange', applyHash);
+const relayout = () => { if (M && (el.scroll.clientWidth !== view.w || (window.devicePixelRatio || 1) !== view.dpr)) layout(); };
+if (window.ResizeObserver) new ResizeObserver(() => requestAnimationFrame(relayout)).observe(el.scroll); // deferred: avoids RO loop errors
+addEventListener('resize', relayout);
+const scheme = window.matchMedia && matchMedia('(prefers-color-scheme: dark)');
+if (scheme && scheme.addEventListener) scheme.addEventListener('change', () => { readColors(); onScroll(); });
+readColors();
+
+// ---------- boot ----------
+// The hidden guard element after the data script closes it even when a payload string left the HTML tokenizer in
+// its "double escaped" state (a comment opener followed by a script start tag); the data then ends with the
+// guard's markup, which is cut off here.
+let raw = el['soniccraft-data'] ? el['soniccraft-data'].textContent : '';
+const cut = raw.indexOf('</' + 'script>');
+raw = (cut < 0 ? raw : raw.slice(0, cut)).trim();
+if (!raw || raw === TOKEN) showLoader();
+else {
+  let data;
+  try { data = JSON.parse(raw); } catch (err) { showLoader(`The embedded preview data could not be read (${err.message}). Open the files instead.`); }
+  if (data !== undefined) { Object.assign(loaded, { main: data, embedded: true }); start(normalize(data, { embedded: true }), true); }
+}
+})();
+</script>
+</body>
+</html>

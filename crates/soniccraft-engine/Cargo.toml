@@ -1,0 +1,36 @@
+[package]
+name = "soniccraft-engine"
+description = "SonicCraft engine: validate, dry-run and render declarative audio timelines"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+default = ["mp3"]
+# Native MP3 encoding via LAME (LGPL-3.0, statically linked). Without it, mp3 output needs ffmpeg
+# (docs/DESIGN.md §11).
+mp3 = ["soniccraft-dsp/mp3"]
+
+[dependencies]
+soniccraft-core.workspace = true
+soniccraft-layout.workspace = true
+soniccraft-captions.workspace = true
+soniccraft-dsp.workspace = true
+soniccraft-tts.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+indexmap.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+futures.workspace = true
+tracing.workspace = true
+which.workspace = true
+# Did-you-mean suggestions for misspelled asset file names.
+strsim.workspace = true
+# Stems are streamed to their WAV files window by window (the same writer soniccraft-dsp uses).
+hound.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

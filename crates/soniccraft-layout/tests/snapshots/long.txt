@@ -1,0 +1,44 @@
+SonicCraft plan: Two-person podcast
+duration 4:05.0 | 24000 Hz | 3 tracks | 16 cues, 16 pauses, 1 clip
+durations: 8 of 17 estimated
+
+time         0:00    0:30    1:00    1:30    2:00     2:30    3:00    3:30
+             |---+---|---+---|---+---|---+---|---+----|---+---|---+---|---+---|-
+alice        ##  ### ####     ####      ###      ###      ####      ####
+bob            ##  ##      ##       ##       ##       ###       ##        ##
+bed          ===================================================================
+legend: # speech  = music/sfx  - ducked  blank = silence  (1 col = 3.66 s)
+
+16 cues:
+  start     end      dur     track  id  speaker  source    text
+  0:00.00   0:07.00  7.00s   alice  a0  -        exact     Alice speaks for a while about the topic at h...
+  0:07.60   0:12.60  5.00s   bob    b0  -        estimate  Bob answers.
+  0:16.00   0:23.50  7.50s   alice  a1  -        exact     Alice speaks for a while about the topic at h...
+  0:23.60   0:28.60  5.00s   bob    b1  -        estimate  Bob answers.
+  0:32.50   0:40.50  8.00s   alice  a2  -        exact     Alice speaks for a while about the topic at h...
+  0:51.50*  0:56.50  5.00s   bob    b2  -        estimate  Bob answers.
+  1:05.50*  1:14.00  8.50s   alice  a3  -        exact     Alice speaks for a while about the topic at h...
+  1:25.00*  1:30.00  5.00s   bob    b3  -        estimate  Bob answers.
+  1:39.00*  1:48.00  9.00s   alice  a4  -        exact     Alice speaks for a while about the topic at h...
+  1:59.00*  2:04.00  5.00s   bob    b4  -        estimate  Bob answers.
+  2:13.00*  2:22.50  9.50s   alice  a5  -        exact     Alice speaks for a while about the topic at h...
+  2:33.50*  2:38.50  5.00s   bob    b5  -        estimate  Bob answers.
+  2:47.50*  2:57.50  10.00s  alice  a6  -        exact     Alice speaks for a while about the topic at h...
+  3:08.50*  3:13.50  5.00s   bob    b6  -        estimate  Bob answers.
+  3:22.50*  3:33.00  10.50s  alice  a7  -        exact     Alice speaks for a while about the topic at h...
+  3:44.00*  3:49.00  5.00s   bob    b7  -        estimate  Bob answers.
+  * b2 was pushed from 0:39.60 by the speech-overlap policy
+  * a3 was pushed from 0:49.50 by the speech-overlap policy
+  * b3 was pushed from 1:07.50 by the speech-overlap policy
+  * a4 was pushed from 1:23.00 by the speech-overlap policy
+  * b4 was pushed from 1:41.00 by the speech-overlap policy
+  * a5 was pushed from 1:57.00 by the speech-overlap policy
+  * b5 was pushed from 2:15.00 by the speech-overlap policy
+  * a6 was pushed from 2:31.50 by the speech-overlap policy
+  * b6 was pushed from 2:49.50 by the speech-overlap policy
+  * a7 was pushed from 3:06.50 by the speech-overlap policy
+  * b7 was pushed from 3:24.50 by the speech-overlap policy
+
+1 clip:
+  start    end      dur      track  id   source  file
+  0:00.00  4:05.00  245.00s  bed    bed  fixed   bed.flac (loop, open-ended, fade in 3.00s, fade out 5.00s)

@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "output": {"format": "mp3", "sample_rate": "48k", "channels": 3, "export_subtitles": ["vtt", 2]},
+  "subtitles": {"max_lines": 0, "min_duration_ms": "9s", "max_duration_ms": "2s"},
+  "speakers": {"host": "Alice"},
+  "providers": {"eleven": {"type": "elevenlabs", "max_concurrency": -1, "timeout_ms": 0}},
+  "tracks": [
+    {"id": "voice", "type": "speech", "trim_silence": {"threshold_db": "quiet"},
+     "sequence": [{"text": "Hi", "provider": "eleven", "speaker": "host", "allow_overlap": "yes"}, 5]},
+    {"id": "bed", "type": "music", "source": "bed.wav", "loop": "true", "ducking": {"trigger_tracks": "voice"}}
+  ]
+}

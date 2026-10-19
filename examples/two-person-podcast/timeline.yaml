@@ -1,0 +1,118 @@
+# yaml-language-server: $schema=../../skills/soniccraft/reference/timeline-schema.json
+#
+# Two-person podcast segment. Host and guest alternate on ONE speech track: cues are sequential, so
+# turns can never collide, and each pause sets the gap before the next turn. A two-clip music track
+# plays an intro bed (ducked under the host's welcome) and an outro bed that swells in under the last
+# line; chimes mark the open and the close. Master: podcast preset (-16 LUFS, -1 dBTP), 192 kbps MP3.
+#
+# Needs ELEVENLABS_API_KEY. To render locally instead, set both speakers to `provider: kokoro` with
+# Kokoro voices (for example `am_michael` and `af_heart`) and run a Kokoro-FastAPI server.
+#
+#   soniccraft plan   <this file>    # dry run: estimated layout, cost (characters) per provider
+#   soniccraft render <this file>    # podcast.mp3 + .vtt + .srt + .words.json + .manifest.json
+version: "1.0"
+title: "Signal Path, episode 12"
+description: "Host and guest on why agent-generated audio should be compiled, not hand-assembled."
+
+output:
+  path: podcast.mp3
+  format: mp3
+  bitrate: 192k
+  loudness_preset: podcast
+  export_subtitles: [vtt, srt, json]
+  export_manifest: true
+
+subtitles:
+  max_chars_per_line: 42
+  max_lines: 2
+  speaker_labels: true
+
+timing:
+  speech_overlap: push
+  min_gap_ms: 250
+
+providers:
+  elevenlabs: # a built-in name: `type` defaults to elevenlabs, the key comes from ELEVENLABS_API_KEY
+    model: eleven_multilingual_v2
+    max_concurrency: 2
+    settings:
+      stability: 0.5
+      similarity_boost: 0.75
+
+speakers:
+  host:
+    provider: elevenlabs
+    voice_id: JBFqnCBsd6RMkjVDRZzb # "George", an ElevenLabs premade voice
+    label: Host
+  guest:
+    provider: elevenlabs
+    voice_id: EXAVITQu4vr4xnSDxMaL # "Sarah", an ElevenLabs premade voice
+    label: Guest
+
+tracks:
+  - id: music
+    type: music
+    volume: 0.8
+    ducking:
+      trigger_tracks: [conversation]
+      reduction_db: -18
+      release_ms: 600
+    clips:
+      - id: intro_bed
+        source: assets/audio/synthwave_loop.wav
+        loop: true
+        start_at_ms: 0
+        end_relative: { after_cue: intro, offset_ms: 1500 }
+        fade_in_ms: 800
+        fade_out_ms: 2500
+      - id: outro_bed
+        source: assets/audio/synthwave_loop.wav
+        loop: true
+        start_relative: { after_cue: outro, offset_ms: -1500 }
+        duration_ms: 9000
+        fade_in_ms: 1500
+        fade_out_ms: 3500
+
+  - id: conversation
+    type: speech
+    start_at_ms: 2500 # the intro bed plays alone for 2.5 s
+    sequence:
+      - id: intro
+        speaker: host
+        text: "Welcome back to Signal Path, the show about the systems behind the software. Today's guest builds audio tooling for AI agents."
+      - pause: 400ms
+      - id: guest_hello
+        speaker: guest
+        text: "Thanks for having me. It's a fun time to be working on audio."
+      - pause: 300ms
+      - id: question_problem
+        speaker: host
+        text: "Let's start with the problem. Why is generating audio so hard for an agent?"
+      - pause: 350ms
+      - id: answer_problem
+        speaker: guest
+        text: "Because the agent usually writes an ffmpeg filter graph by hand. Timing drifts, lines overlap, the music never ducks under the voice, and every clip comes out at a different loudness."
+      - pause: 300ms
+      - id: question_fix
+        speaker: host
+        text: "And what changes when the timeline is declarative?"
+      - pause: 350ms
+      - id: answer_fix
+        speaker: guest
+        text: "The agent describes intent and a compiler handles the geometry. Every cue lands sample-accurately, the bed ducks under the voice, and the master hits minus sixteen LUFS."
+        caption: "The agent describes intent and a compiler handles the geometry. Every cue lands sample-accurately, the bed ducks under the voice, and the master hits -16 LUFS."
+      - pause: 500ms
+      - id: outro
+        speaker: host
+        text: "That's all for today. Thanks for listening to Signal Path."
+
+  - id: stingers
+    type: sfx
+    volume: 0.8
+    clips:
+      - id: open_chime
+        source: assets/sfx/chime.wav
+        start_relative: { before_cue: intro, offset_ms: -300 } # ends 300 ms before the welcome
+      - id: close_chime
+        source: assets/sfx/chime.wav
+        start_relative: { after_cue: outro, offset_ms: 600 }

@@ -1,0 +1,61 @@
+version: 1.0
+output: {format: mp3, sample_rate: 96000, path: out.wav, bit_depth: 20}
+providers:
+  eleven: {api_key_env: ELEVENLABS_API_KEY}
+  my_say: {type: macos_say, command: [say], base_url: "http://x"}
+  cmd: {type: command}
+speakers:
+  narrator: {provider: mock, label: "Narrator", gain_db: -3}
+  guest: {provider: elevenlabs}
+tracks:
+  - id: a
+    type: speech
+    speaker: narator
+    sequence:
+      - id: cue_02
+        text: "two"
+        start_relative: {after_cue: cue_03}
+      - id: cue_03
+        text: "three"
+        start_relative: {after_cue: cue_02}
+      - text: "self"
+        start_relative: {with_cue: a.cue3}
+      - pause: 300
+        id: p1
+      - text: "after pause"
+        speaker: guest
+        start_relative: {after_cue: a.pause1, offset_ms: -200}
+  - id: b
+    type: speech
+    start_relative: {after_cue: c}
+    sequence:
+      - text: "b1"
+        provider: cmd
+  - id: c
+    type: speech
+    start_relative: {with_cue: b}
+    sequence:
+      - text: "c1"
+        provider: openai
+        voice_id: nova
+  - id: bed
+    type: music
+    clips:
+      - source: a.wav
+        crossfade_ms: 500
+        start_at_ms: 5000
+        end_at_ms: 2000
+      - source: b.wav
+        loop: true
+        duration_ms: 0
+        end_at_ms: 9000
+      - id: c2
+        source: c.wav
+        start_relative: {before_cue: cue_02}
+        end_relative: {before_cue: cue_03}
+  - id: sting
+    type: sfx
+    source: s.wav
+    start_relative: {after_cue: bed}
+    voice_id: x
+    sequence: []

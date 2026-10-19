@@ -1,0 +1,26 @@
+[package]
+name = "soniccraft-dsp"
+description = "SonicCraft native DSP: decode, resample, mix, ducking, EBU R128 loudness, true-peak limiting, encode"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[features]
+default = ["mp3"]
+# Native MP3 encoding via LAME (LGPL-3.0, statically linked). See docs/DESIGN.md §11.
+mp3 = ["dep:mp3lame-encoder"]
+
+[dependencies]
+thiserror.workspace = true
+symphonia.workspace = true
+rubato.workspace = true
+ebur128.workspace = true
+hound.workspace = true
+mp3lame-encoder = { workspace = true, optional = true }
+flacenc.workspace = true
+which.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
