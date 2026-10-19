@@ -13,6 +13,7 @@ import {
   readFileSync, renameSync, rmSync, statSync, writeFileSync,
 } from 'node:fs';
 import { homedir } from 'node:os';
+import { gunzipSync } from 'node:zlib';
 import { dirname, extname, join, resolve } from 'node:path';
 
 /** Release download base until the project's GitHub owner replaces the placeholder. */
@@ -20,6 +21,9 @@ export const DEFAULT_DOWNLOAD_BASE = 'https://github.com/OWNER/soniccraft/releas
 
 /** Largest archive accepted from a download (the release archives are 13 to 15 MB). */
 export const MAX_ARCHIVE_BYTES = 128 * 1024 * 1024;
+
+/** Largest unpacked tar accepted (the archives hold two binaries and a few text files). */
+const MAX_UNPACKED_BYTES = 512 * 1024 * 1024;
 
 /** Per-request limit for a download, so a stalled connection cannot hang an MCP client's startup. */
 export const DOWNLOAD_TIMEOUT_MS = 300_000;
@@ -370,12 +374,22 @@ async function download({ base, version, file, name, expected, dir, env, platfor
   mkdirSync(parent, { recursive: true });
   const staging = mkdtempSync(join(parent, '.staging-'));
   try {
-    const local = join(staging, file);
-    writeFileSync(local, archive);
+    // A .tar.gz is decompressed here: GNU tar's -z runs an external `gzip` found on PATH, and the
+    // environment an MCP client starts the launcher with may have no PATH at all.
+    const gzipped = file.endsWith('.tar.gz');
+    const local = join(staging, gzipped ? file.slice(0, -'.gz'.length) : file);
+    let contents = archive;
+    if (gzipped) {
+      try {
+        contents = gunzipSync(archive, { maxOutputLength: MAX_UNPACKED_BYTES });
+      } catch (error) {
+        throw new LauncherError(`Cannot unpack ${file}: ${error.message}`);
+      }
+    }
+    writeFileSync(local, contents);
     // The archive's checksum is verified; tar (bsdtar or GNU tar) also refuses absolute and `..` members.
     // --no-same-owner: run as root (e.g. in a container), tar would otherwise keep the archive's uid/gid.
-    const flags = file.endsWith('.zip') ? '-xf' : '-xzf';
-    const untar = spawnSync(tarCommand(platform, env), ['--no-same-owner', flags, local, '-C', staging], {
+    const untar = spawnSync(tarCommand(platform, env), ['--no-same-owner', '-xf', local, '-C', staging], {
       encoding: 'utf8', stdio: ['ignore', 'ignore', 'pipe'], windowsHide: true,
     });
     if (untar.error || untar.status !== 0) {

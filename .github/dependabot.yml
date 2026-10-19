@@ -12,3 +12,7 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    ignore:
+      # Its ref selects the Rust toolchain (`@stable`, the msrv job's `@1.89.0`), not a release of the
+      # action, so "updates" would change the Rust version CI tests.
+      - dependency-name: dtolnay/rust-toolchain
