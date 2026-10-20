@@ -17,12 +17,21 @@ Diagnostic codes and report fields are treated as public API.
 - Distribution: a Homebrew tap (`brew install user-github-me/soniccraft/soniccraft`), a Scoop bucket, the
   official MCP Registry entry `io.github.user-github-me/soniccraft` (the container image carries the
   `io.modelcontextprotocol.server.name` label), crates.io metadata and READMEs for every crate,
-  cargo-binstall metadata, `scripts/publish-crates.py` and a trusted-publishing workflow for crates.io.
+  cargo-binstall metadata, `scripts/publish-crates.py` and a trusted-publishing workflow for crates.io. All
+  crates are on crates.io (`cargo install soniccraft`), and the MCP launcher is on npm
+  (`npx -y soniccraft-mcp`), published with provenance by the new npm workflow.
 
 ### Changed
 
 - The CLI package is now named `soniccraft` (it was `soniccraft-cli`), so `cargo install soniccraft` installs
   it. The binaries and the `crates/soniccraft-cli` directory keep their names.
+
+### Fixed
+
+- The release workflow's npm job passes the launcher as `./dist/soniccraft-mcp-X.Y.Z.tgz`: npm 11 and later
+  read `dist/...` as a GitHub `<user>/<repo>` shorthand, so publishing failed.
+- `scripts/publish-crates.py` retries a crates.io index read when the connection drops or the index answers
+  5xx, instead of stopping halfway through a publish.
 
 ## [0.1.0] - 2026-10-20
 

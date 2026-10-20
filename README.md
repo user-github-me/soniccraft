@@ -47,7 +47,9 @@ for my product video."* Everything it needs is below and in [AGENTS.md](AGENTS.m
    soniccraft render my-audio/timeline.yaml --preview   # mastered audio, subtitles, manifest, preview page
    ```
 
-To keep SonicCraft in an agent for good, add the skill and the MCP server (they need the CLI from step 1):
+To keep SonicCraft in an agent for good, add the skill and the MCP server. Both use the CLI from step 1; with
+Node.js 20 or newer the MCP server also runs with nothing installed: use `npx -y soniccraft-mcp` in place of
+`soniccraft mcp` below.
 
 | Agent | Skill | MCP server |
 |---|---|---|
@@ -406,10 +408,9 @@ says so (`missing_credentials`); if you need an `env` entry, write `"${ELEVENLAB
 
 **Without installing Rust**, through npm (Node.js 20 or newer): the [`soniccraft-mcp`](packages/soniccraft-mcp)
 package uses `soniccraft` from `PATH` when there is one; otherwise it downloads the prebuilt release for your
-platform on first use and verifies it against SHA-256 checksums pinned in the package. Until it is published on
-the npm registry, run the package attached to the release instead of `soniccraft-mcp` in the commands below:
-`npx -y --allow-remote=root https://github.com/user-github-me/soniccraft/releases/download/v0.1.0/soniccraft-mcp-0.1.0.tgz`
-(npm 12 refuses packages from a URL without `--allow-remote=root`; older npm ignores the flag).
+platform on first use and verifies it against SHA-256 checksums pinned in the package. Each version on npm is
+the release's `soniccraft-mcp-X.Y.Z.tgz` asset, published from GitHub Actions with
+[provenance](https://docs.npmjs.com/generating-provenance-statements).
 
 ```bash
 claude mcp add soniccraft -- npx -y soniccraft-mcp
@@ -704,7 +705,7 @@ Dependencies point one way: `layout` → `core`; `tts` → {`core`, `dsp`}; `eng
     (`io.github.user-github-me/soniccraft`), the Claude Code plugin marketplace in this repository and the
     Agent Skill for `npx skills add`
   - [x] crates.io: `cargo install soniccraft` and `cargo binstall soniccraft`
-  - [ ] npm (`npx soniccraft-mcp`): the launcher is ready, publication pending
+  - [x] npm: `npx -y soniccraft-mcp` (the MCP server, with the release binary downloaded and verified)
   - [ ] Curated directories: the Anthropic plugin directory and the Cursor Marketplace
 
 ## Contributing
