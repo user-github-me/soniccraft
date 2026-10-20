@@ -17,6 +17,9 @@ server and an Agent Skill.
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
 [![crates.io](https://img.shields.io/crates/v/soniccraft.svg)](https://crates.io/crates/soniccraft)
 
+**[Website](https://user-github-me.github.io/soniccraft/)** · [Quickstart](#quickstart) ·
+[Use it from an AI agent](#use-it-from-an-ai-agent) · [MCP server](#mcp-server) · [Agent Skill](#agent-skill)
+
 ## Use it from an AI agent
 
 Give an agent (Claude Code, Codex, Cursor, Gemini CLI, ...) the link to this repository and ask for audio, for
