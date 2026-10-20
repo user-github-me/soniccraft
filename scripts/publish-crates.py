@@ -95,15 +95,20 @@ def published_versions(name):
         f"{INDEX}/{index_path(name)}",
         headers={"User-Agent": USER_AGENT, "Cache-Control": "no-cache"},
     )
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            body = response.read().decode("utf-8")
-    except urllib.error.HTTPError as error:
-        if error.code in (404, 410, 451):  # what cargo treats as "no such crate"
-            return set()
-        fail(f"the crates.io index answered {error.code} for {name}: {error.reason}")
-    except (urllib.error.URLError, OSError) as error:
-        fail(f"cannot read the crates.io index for {name}: {error}")
+    for attempt in range(1, 5):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                body = response.read().decode("utf-8")
+            break
+        except urllib.error.HTTPError as error:
+            if error.code in (404, 410, 451):  # what cargo treats as "no such crate"
+                return set()
+            if error.code < 500 or attempt == 4:
+                fail(f"the crates.io index answered {error.code} for {name}: {error.reason}")
+        except (urllib.error.URLError, OSError) as error:
+            if attempt == 4:
+                fail(f"cannot read the crates.io index for {name}: {error}")
+        time.sleep(2**attempt)  # a dropped connection or a 5xx is usually gone a few seconds later
     return {json.loads(line)["vers"] for line in body.splitlines() if line.strip()}
 
 

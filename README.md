@@ -15,6 +15,7 @@ server and an Agent Skill.
 
 [![CI](https://github.com/user-github-me/soniccraft/actions/workflows/ci.yml/badge.svg)](https://github.com/user-github-me/soniccraft/actions/workflows/ci.yml)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
+[![crates.io](https://img.shields.io/crates/v/soniccraft.svg)](https://crates.io/crates/soniccraft)
 
 ## Use it from an AI agent
 
@@ -230,6 +231,9 @@ brew install user-github-me/soniccraft/soniccraft                               
 irm https://raw.githubusercontent.com/user-github-me/soniccraft/main/install.ps1 | iex        # Windows
 scoop bucket add soniccraft https://github.com/user-github-me/scoop-soniccraft; scoop install soniccraft
 ```
+
+With Rust: `cargo binstall soniccraft` downloads the same release binary, and `cargo install --locked soniccraft`
+builds it from [crates.io](https://crates.io/crates/soniccraft) (requirements below).
 
 **From source.** Requirements: Rust 1.89 or newer ([rustup](https://rustup.rs)) and a C toolchain for the bundled LAME MP3
 encoder (`cc` and `make`: Xcode Command Line Tools on macOS, `build-essential` on Linux; on Windows, the
@@ -699,8 +703,8 @@ Dependencies point one way: `layout` → `core`; `tts` → {`core`, `dsp`}; `eng
   - [x] Listings under the project's GitHub owner: the official MCP Registry
     (`io.github.user-github-me/soniccraft`), the Claude Code plugin marketplace in this repository and the
     Agent Skill for `npx skills add`
-  - [ ] crates.io (`cargo install soniccraft`) and npm (`npx soniccraft-mcp`): packaging ready, first publish
-    pending
+  - [x] crates.io: `cargo install soniccraft` and `cargo binstall soniccraft`
+  - [ ] npm (`npx soniccraft-mcp`): the launcher is ready, publication pending
   - [ ] Curated directories: the Anthropic plugin directory and the Cursor Marketplace
 
 ## Contributing
