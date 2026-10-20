@@ -1,0 +1,53 @@
+name: npm
+
+# Publish the npm launcher of an existing release (its soniccraft-mcp-X.Y.Z.tgz asset, with that release's
+# checksums pinned) to npm, with provenance. Published releases do this themselves (release.yml, job npm, when
+# the repository variable NPM_PUBLISH is `true`); run this for a release from before that, or to retry.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag whose launcher to publish, e.g. v0.1.0
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: publish soniccraft-mcp to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing and provenance
+    env:
+      TAG: ${{ inputs.tag }}
+    steps:
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          package-manager-cache: false
+      - name: Download the packed launcher of the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          case "$TAG" in
+            v[0-9]*.[0-9]*.[0-9]*) ;;
+            *) echo "::error::not a release tag: $TAG"; exit 1 ;;
+          esac
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "soniccraft-mcp-${TAG#v}.tgz" --dir dist
+      - name: Publish
+        env:
+          # An npm token, if any; without one, npm uses trusted publishing (OIDC).
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          version=${TAG#v}
+          if npm view "soniccraft-mcp@$version" version >/dev/null 2>&1; then
+            echo "soniccraft-mcp@$version is already on npm"
+            exit 0
+          fi
+          channel=latest
+          case "$TAG" in *-*) channel=next ;; esac
+          npm publish "dist/soniccraft-mcp-$version.tgz" --access public --provenance --tag "$channel"
