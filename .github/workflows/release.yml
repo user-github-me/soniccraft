@@ -319,4 +319,4 @@ jobs:
         run: |
           channel=latest
           case "$TAG" in *-*) channel=next ;; esac
-          npm publish "dist/soniccraft-mcp-${TAG#v}.tgz" --access public --provenance --tag "$channel"
+          npm publish "./dist/soniccraft-mcp-${TAG#v}.tgz" --access public --provenance --tag "$channel"

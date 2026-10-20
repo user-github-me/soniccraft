@@ -50,4 +50,4 @@ jobs:
           fi
           channel=latest
           case "$TAG" in *-*) channel=next ;; esac
-          npm publish "dist/soniccraft-mcp-$version.tgz" --access public --provenance --tag "$channel"
+          npm publish "./dist/soniccraft-mcp-$version.tgz" --access public --provenance --tag "$channel"
