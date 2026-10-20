@@ -1,0 +1,45 @@
+name: Website
+
+# Publishes the project website (site/, plus the logo and social card from assets/brand/) to GitHub Pages.
+# A custom domain is set in the repository's Settings > Pages; the site uses relative links, so it works
+# on any domain and under /soniccraft/.
+
+on:
+  push:
+    branches: [main]
+    paths: [site/**, assets/brand/**, .github/workflows/website.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Assemble the site
+        run: |
+          mkdir -p _site/assets
+          cp -R site/. _site/
+          cp assets/brand/logo.svg assets/brand/logo-512.png assets/brand/social-preview.png _site/assets/
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
