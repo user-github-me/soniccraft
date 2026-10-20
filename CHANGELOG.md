@@ -7,6 +7,23 @@ Diagnostic codes and report fields are treated as public API.
 
 ## [Unreleased]
 
+### Added
+
+- One-line installers: `install.sh` (macOS, Linux, Git Bash) and `install.ps1` (Windows PowerShell 5.1 and 7)
+  download a release archive, verify its SHA-256 and install `soniccraft` and `soniccraft-mcp`. The Installers
+  workflow tests both on Linux, macOS and Windows after each release.
+- `AGENTS.md` (imported by `CLAUDE.md`) for AI agents that use or change SonicCraft, and a "Use it from an AI
+  agent" section at the top of the README.
+- Distribution: a Homebrew tap (`brew install user-github-me/soniccraft/soniccraft`), a Scoop bucket, the
+  official MCP Registry entry `io.github.user-github-me/soniccraft` (the container image carries the
+  `io.modelcontextprotocol.server.name` label), crates.io metadata and READMEs for every crate,
+  cargo-binstall metadata, `scripts/publish-crates.py` and a trusted-publishing workflow for crates.io.
+
+### Changed
+
+- The CLI package is now named `soniccraft` (it was `soniccraft-cli`), so `cargo install soniccraft` installs
+  it. The binaries and the `crates/soniccraft-cli` directory keep their names.
+
 ## [0.1.0] - 2026-10-20
 
 First release: timeline DSL v1.0 and engine v0.1.

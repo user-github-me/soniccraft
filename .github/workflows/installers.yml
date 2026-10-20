@@ -1,0 +1,67 @@
+name: Installers
+
+# install.sh and install.ps1 against the latest release, on every system they support, followed by a render
+# of the mock demo with the installed binary.
+
+on:
+  push:
+    branches: [main]
+    paths: [install.sh, install.ps1, .github/workflows/installers.yml]
+  pull_request:
+    paths: [install.sh, install.ps1, .github/workflows/installers.yml]
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sh:
+    name: install.sh (${{ matrix.runner }})
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, macos-15-intel, windows-latest]
+    runs-on: ${{ matrix.runner }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install
+        run: |
+          sh ./install.sh
+          if command -v cygpath >/dev/null; then cygpath -w "$HOME/.local/bin"; else echo "$HOME/.local/bin"; fi >> "$GITHUB_PATH"
+      - name: Render the mock demo
+        run: |
+          soniccraft --version
+          soniccraft init "$RUNNER_TEMP/demo" --template offline-demo-mock
+          soniccraft render "$RUNNER_TEMP/demo/timeline.yaml" --json > "$RUNNER_TEMP/report.json"
+          ls "$RUNNER_TEMP/demo"
+
+  powershell:
+    name: install.ps1 (${{ matrix.shell }})
+    strategy:
+      fail-fast: false
+      matrix:
+        shell: [pwsh, powershell]
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install (the way `irm ... | iex` runs it)
+        run: |
+          Invoke-Expression (Get-Content -Raw ./install.ps1)
+          Add-Content $env:GITHUB_PATH (Join-Path $env:LOCALAPPDATA 'Programs\soniccraft\bin')
+      - name: Render the mock demo
+        run: |
+          soniccraft --version
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          soniccraft init "$env:RUNNER_TEMP\demo" --template offline-demo-mock
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          soniccraft render "$env:RUNNER_TEMP\demo\timeline.yaml" --json > "$env:RUNNER_TEMP\report.json"
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Get-ChildItem "$env:RUNNER_TEMP\demo"

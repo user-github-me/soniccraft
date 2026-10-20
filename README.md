@@ -16,6 +16,49 @@ server and an Agent Skill.
 [![CI](https://github.com/user-github-me/soniccraft/actions/workflows/ci.yml/badge.svg)](https://github.com/user-github-me/soniccraft/actions/workflows/ci.yml)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
 
+## Use it from an AI agent
+
+Give an agent (Claude Code, Codex, Cursor, Gemini CLI, ...) the link to this repository and ask for audio, for
+example *"Use https://github.com/user-github-me/soniccraft to make a 30-second voiceover with background music
+for my product video."* Everything it needs is below and in [AGENTS.md](AGENTS.md).
+
+1. **Install the CLI** (prebuilt and checksum-verified, no Rust needed). Homebrew, Scoop, Docker and Cargo work
+   too: see [Quickstart](#quickstart).
+
+   ```bash
+   curl -fsSL https://raw.githubusercontent.com/user-github-me/soniccraft/main/install.sh | sh   # macOS, Linux
+   ```
+
+   ```powershell
+   irm https://raw.githubusercontent.com/user-github-me/soniccraft/main/install.ps1 | iex        # Windows
+   ```
+
+2. **Write a timeline.** `soniccraft init my-audio` starts one that renders offline: macOS voices on a Mac,
+   elsewhere a mock test voice (not real speech). Real voices anywhere: Kokoro or Piper (free, local) or an
+   ElevenLabs, OpenAI or Cartesia key, see [Providers](#providers). `soniccraft init --list` shows the
+   templates, `soniccraft providers` the voices usable here, and `soniccraft schema` the JSON Schema; the
+   [Agent Skill](skills/soniccraft/SKILL.md) explains the format.
+3. **Check it, see the cost, render it:**
+
+   ```bash
+   soniccraft validate my-audio/timeline.yaml           # errors with a code, line, column and fix hint
+   soniccraft plan my-audio/timeline.yaml               # free dry run: timing, ducking, characters to synthesize
+   soniccraft render my-audio/timeline.yaml --preview   # mastered audio, subtitles, manifest, preview page
+   ```
+
+To keep SonicCraft in an agent for good, add the skill and the MCP server (they need the CLI from step 1):
+
+| Agent | Skill | MCP server |
+|---|---|---|
+| Claude Code | `claude plugin marketplace add user-github-me/soniccraft`, then `claude plugin install soniccraft@soniccraft` | included in the plugin, or `claude mcp add soniccraft -- soniccraft mcp` |
+| Codex | `npx skills add user-github-me/soniccraft -g -a codex` | `codex mcp add soniccraft -- soniccraft mcp` |
+| Cursor | `npx skills add user-github-me/soniccraft -g -a cursor` | `{"mcpServers": {"soniccraft": {"command": "soniccraft", "args": ["mcp"]}}}` in `.cursor/mcp.json` |
+| Gemini CLI and others | `npx skills add user-github-me/soniccraft -g` (choose the agent) | the same `mcpServers` entry (Gemini CLI: `~/.gemini/settings.json`) |
+
+The server is also in the [official MCP Registry](https://registry.modelcontextprotocol.io) as
+`io.github.user-github-me/soniccraft` (container image). Details: [MCP server](#mcp-server) and
+[Agent Skill](#agent-skill).
+
 ## Why
 
 Ask an agent for a two-voice explainer with background music and it will usually hand-write an ffmpeg
@@ -176,7 +219,19 @@ durations without calling a TTS API (abridged JSON, estimated numbers):
 
 ## Quickstart
 
-Requirements: Rust 1.89 or newer ([rustup](https://rustup.rs)) and a C toolchain for the bundled LAME MP3
+Install a prebuilt binary (checksum-verified; no Rust or C toolchain needed):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/user-github-me/soniccraft/main/install.sh | sh   # macOS, Linux: ~/.local/bin
+brew install user-github-me/soniccraft/soniccraft                                            # Homebrew (macOS, Linux)
+```
+
+```powershell
+irm https://raw.githubusercontent.com/user-github-me/soniccraft/main/install.ps1 | iex        # Windows
+scoop bucket add soniccraft https://github.com/user-github-me/scoop-soniccraft; scoop install soniccraft
+```
+
+**From source.** Requirements: Rust 1.89 or newer ([rustup](https://rustup.rs)) and a C toolchain for the bundled LAME MP3
 encoder (`cc` and `make`: Xcode Command Line Tools on macOS, `build-essential` on Linux; on Windows, the
 Visual Studio Build Tools, plus `AWS_LC_SYS_PREBUILT_NASM=1` in the environment unless NASM is installed).
 ffmpeg is optional (ogg/opus/m4a output, extra input formats). Prebuilt binaries need none of this: see
@@ -635,12 +690,18 @@ Dependencies point one way: `layout` → `core`; `tts` → {`core`, `dsp`}; `eng
   - [x] WebVTT, SRT, JSON word timestamps and HyperFrames transcripts
   - [x] CLI with `--json`, MCP server (both protocol eras), Agent Skill, Claude Code plugin
   - [x] Stems, manifest, web preview, examples with generated assets
-- **Phase 5: Distribution** (upcoming)
+- **Phase 5: Distribution** (v0.1)
   - [x] Release workflow: prebuilt binaries for macOS, Linux and Windows (with and without the LGPL MP3
-    encoder), `SHA256SUMS`, third-party license notices and the `soniccraft-mcp` npm launcher (first release
-    pending)
-  - [ ] Publication on crates.io and package managers
-  - [ ] Skill and plugin marketplace listings under the project's final GitHub owner
+    encoder), `SHA256SUMS`, third-party license notices and the `soniccraft-mcp` npm launcher
+  - [x] Package managers: one-line installers (`install.sh`, `install.ps1`), a
+    [Homebrew tap](https://github.com/user-github-me/homebrew-soniccraft), a
+    [Scoop bucket](https://github.com/user-github-me/scoop-soniccraft) and the container image
+  - [x] Listings under the project's GitHub owner: the official MCP Registry
+    (`io.github.user-github-me/soniccraft`), the Claude Code plugin marketplace in this repository and the
+    Agent Skill for `npx skills add`
+  - [ ] crates.io (`cargo install soniccraft`) and npm (`npx soniccraft-mcp`): packaging ready, first publish
+    pending
+  - [ ] Curated directories: the Anthropic plugin directory and the Cursor Marketplace
 
 ## Contributing
 
