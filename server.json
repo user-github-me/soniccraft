@@ -1,0 +1,71 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.user-github-me/soniccraft",
+  "title": "SonicCraft",
+  "description": "Compile timelines of TTS speech, music and SFX into ducked, loudness-mastered audio with subtitles",
+  "repository": {
+    "url": "https://github.com/user-github-me/soniccraft",
+    "source": "github"
+  },
+  "websiteUrl": "https://github.com/user-github-me/soniccraft#mcp-server",
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "oci",
+      "identifier": "ghcr.io/user-github-me/soniccraft:0.1.0",
+      "runtimeHint": "docker",
+      "transport": {
+        "type": "stdio"
+      },
+      "runtimeArguments": [
+        {
+          "type": "named",
+          "name": "--mount",
+          "value": "type=bind,src={work_dir},dst=/work",
+          "description": "Host directory mounted at /work: timelines and assets are read from it and renders are written to it (as uid 1000)",
+          "isRequired": true,
+          "variables": {
+            "work_dir": {
+              "description": "Absolute path of the host directory with your timelines and audio assets",
+              "format": "filepath",
+              "isRequired": true
+            }
+          }
+        }
+      ],
+      "packageArguments": [
+        {
+          "type": "positional",
+          "value": "mcp",
+          "description": "Run the SonicCraft MCP server on stdio"
+        },
+        {
+          "type": "named",
+          "name": "--base-dir",
+          "value": "/work",
+          "description": "Resolve relative timeline, asset and output paths against the mounted directory"
+        }
+      ],
+      "environmentVariables": [
+        {
+          "name": "ELEVENLABS_API_KEY",
+          "description": "ElevenLabs API key for the elevenlabs TTS provider (optional)",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "description": "OpenAI API key for the openai TTS provider (optional)",
+          "isRequired": false,
+          "isSecret": true
+        },
+        {
+          "name": "CARTESIA_API_KEY",
+          "description": "Cartesia API key for the cartesia TTS provider (optional)",
+          "isRequired": false,
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}

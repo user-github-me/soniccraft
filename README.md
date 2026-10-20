@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/brand/wordmark-dark.png">
+    <img src="assets/brand/wordmark-light.png" alt="SonicCraft" width="420">
+  </picture>
+</p>
+
 # SonicCraft
 
 **A declarative, deterministic audio engine for AI agents.** Describe a production as a YAML (or JSON)
@@ -600,7 +607,7 @@ validate/plan warn ahead. Timelines are at most 24 h long.
 | [`soniccraft-tts`](crates/soniccraft-tts) | Provider trait and the eight built-in providers, content-addressed cache, duration estimator, retries and concurrency, credential checks, voice listing. |
 | [`soniccraft-engine`](crates/soniccraft-engine) | Orchestration: `validate()`, `plan()` (dry run), `render()`; environment checks; all report types. |
 | [`soniccraft-mcp`](crates/soniccraft-mcp) | MCP stdio server exposing the engine as tools. |
-| [`soniccraft-cli`](crates/soniccraft-cli) | The `soniccraft` binary (and the `soniccraft-mcp` launcher). Human-readable and `--json` output. |
+| [`soniccraft`](crates/soniccraft-cli) (`crates/soniccraft-cli`) | The `soniccraft` binary (and the `soniccraft-mcp` launcher). Human-readable and `--json` output. |
 | [`packages/soniccraft-web-preview`](packages/soniccraft-web-preview) | Zero-dependency WebAudio visualizer; the engine embeds a vendored copy (`crates/soniccraft-engine/assets/preview.html`) for `render --preview`. |
 | [`packages/soniccraft-mcp`](packages/soniccraft-mcp) | The npm launcher (`npx -y soniccraft-mcp`): finds or downloads the release binary and runs `soniccraft mcp`. |
 | [`skills/soniccraft`](skills/soniccraft) | The Agent Skill: `SKILL.md`, references, templates. |

@@ -6,6 +6,14 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/soniccraft-captions"
+readme = "README.md"
+keywords = ["captions", "subtitles", "webvtt", "srt", "alignment"]
+categories = ["multimedia", "text-processing", "accessibility"]
+# The published crate: sources, README and license texts.
+# The tests stay in the repository and run there.
+include = ["/src", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 
 [dependencies]
 serde.workspace = true

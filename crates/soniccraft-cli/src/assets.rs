@@ -514,7 +514,7 @@ mod tests {
     #[test]
     fn fingerprints_are_stable() {
         // Pinned so that accidental changes to the synthesis (or platform-dependent math) are caught.
-        // Regenerate with `SONICCRAFT_PRINT_ASSET_HASHES=1 cargo test -p soniccraft-cli fingerprints -- --nocapture`.
+        // Regenerate with `SONICCRAFT_PRINT_ASSET_HASHES=1 cargo test -p soniccraft fingerprints -- --nocapture`.
         let expected: [(Asset, u64); 4] = [
             (Asset::SynthwaveLoop, 0xDA32EAE9A31FF35A),
             (Asset::Whoosh, 0xA5A512496E2FD981),

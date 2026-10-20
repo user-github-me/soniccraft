@@ -99,7 +99,7 @@ npm test    # node:test, no dependencies
 ```
 
 The tests that run the real server use `SONICCRAFT_TEST_BIN`, else `target/release/soniccraft` or
-`target/debug/soniccraft` of the repository (`cargo build -p soniccraft-cli`), and are skipped when neither
+`target/debug/soniccraft` of the repository (`cargo build -p soniccraft`), and are skipped when neither
 exists. The archive names follow `.github/workflows/release.yml`:
 `soniccraft-v<version>-<target>[-no-mp3].tar.gz` (`.zip` for Windows), each with a `.sha256` file, all
 listed in `SHA256SUMS`. Keep `version` in `package.json` equal to the workspace version; the release

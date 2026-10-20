@@ -1,0 +1,176 @@
+name: MCP Registry
+
+# Lists SonicCraft in the official MCP Registry (https://registry.modelcontextprotocol.io) from server.json:
+# the server io.github.<owner>/soniccraft, run from a release's container image
+# (`docker run -i --rm --mount ... ghcr.io/<owner>/soniccraft:<version> mcp --base-dir /work`).
+#
+# It runs when "Container image" has published a release's image, and by hand (workflow_dispatch) for an
+# image that is already published, e.g. after `gh workflow run container.yml -f tag=vX.Y.Z` re-published it
+# (a run of Container image started by hand doesn't start this workflow: run it by hand with the same tag).
+#
+# - server.json on the default branch is the template: the release's version goes into `version`, the image
+#   tag and the version of any other package before publishing.
+# - The registry accepts the image only if its io.modelcontextprotocol.server.name label (set by
+#   container.yml) equals server.json's name; this workflow checks that first.
+# - Authentication is GitHub OIDC (`mcp-publisher login github-oidc`, needs `id-token: write`), so no secret
+#   is needed. It grants the namespace io.github.<repository owner>/*.
+# - A published version can't be changed or published again: a version that is already listed is skipped.
+#   Pre-releases are listed only when this workflow is run by hand.
+
+on:
+  workflow_run:
+    workflows: ["Container image"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release whose published container image to list, e.g. v0.1.0
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mcp-registry
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash # -eo pipefail
+
+jobs:
+  publish:
+    name: publish server.json
+    # Container image also runs for pushes and pull requests (a build check that publishes nothing): only a
+    # successful run for a published release counts, and not for a pre-release (a tag with a hyphen).
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'release' &&
+       !contains(github.event.workflow_run.head_branch, '-'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # GitHub OIDC login to the MCP Registry
+    env:
+      # For a run started by a release, head_branch is the release's tag.
+      TAG: ${{ inputs.tag || github.event.workflow_run.head_branch }}
+      REGISTRY_URL: https://registry.modelcontextprotocol.io
+      # mcp-publisher is pinned: to upgrade, take the version and the SHA-256 of mcp-publisher_linux_amd64.tar.gz
+      # from registry_<version>_checksums.txt of a release at https://github.com/modelcontextprotocol/registry.
+      MCP_PUBLISHER_VERSION: 1.8.1
+      MCP_PUBLISHER_SHA256: a06c9096dcb9727c13555b6be26c7effa707b01f06a4c561ba7a3635443cf2cc
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Put the release's version into server.json
+        id: stamp
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::$TAG is not a release tag (vMAJOR.MINOR.PATCH, optionally -PRERELEASE)"
+            exit 1
+          fi
+          version="${TAG#v}"
+          name="$(jq -r .name server.json)"
+          namespace="io.github.$GITHUB_REPOSITORY_OWNER/"
+          if [[ "$name" != "$namespace"* ]]; then
+            echo "::error file=server.json::the name $name is outside $namespace*, the only namespace that GitHub OIDC grants this repository"
+            exit 1
+          fi
+          # The image's tag, and the version of any other package (npm, cargo, ...) that names one.
+          jq --arg v "$version" '
+            .version = $v
+            | .packages |= map(
+                if .registryType == "oci" then .identifier |= sub(":[^:/@]+$"; ":" + $v)
+                elif has("version") then .version = $v
+                else . end)
+          ' server.json >"$RUNNER_TEMP/server.json"
+          mv "$RUNNER_TEMP/server.json" server.json
+          image="$(jq -r '.packages[] | select(.registryType == "oci") | .identifier' server.json)"
+          if [ "$(printf '%s\n' "$image" | wc -l)" -ne 1 ] || [[ "$image" != *":$version" ]]; then
+            echo "::error file=server.json::expected one oci package with a tagged identifier, got: $image"
+            exit 1
+          fi
+          {
+            echo "name=$name"
+            echo "version=$version"
+            echo "image=$image"
+          } >>"$GITHUB_OUTPUT"
+          cat server.json
+
+      - name: Skip a version that is already listed
+        id: listed
+        env:
+          NAME: ${{ steps.stamp.outputs.name }}
+          VERSION: ${{ steps.stamp.outputs.version }}
+        run: |
+          url="$REGISTRY_URL/v0.1/servers/$(jq -rn --arg s "$NAME" '$s | @uri')/versions/$(jq -rn --arg s "$VERSION" '$s | @uri')"
+          status="$(curl -sS -o /dev/null -w '%{http_code}' "$url")"
+          case "$status" in
+            200)
+              echo "::notice::$NAME $VERSION is already in the MCP Registry: nothing to publish"
+              echo "listed=true" >>"$GITHUB_OUTPUT"
+              ;;
+            404) echo "listed=false" >>"$GITHUB_OUTPUT" ;;
+            *)
+              echo "::error::the MCP Registry answered HTTP $status for $url"
+              exit 1
+              ;;
+          esac
+          echo "url=$url" >>"$GITHUB_OUTPUT"
+
+      - name: The image is published and labelled with the server name
+        if: steps.listed.outputs.listed == 'false'
+        env:
+          IMAGE: ${{ steps.stamp.outputs.image }}
+          NAME: ${{ steps.stamp.outputs.name }}
+        run: |
+          if ! config="$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Image}}')"; then
+            echo "::error::$IMAGE isn't published or isn't public: run Container image for $TAG first"
+            exit 1
+          fi
+          # Like the registry, read the label from the image config (linux/amd64's in a multi-platform image).
+          label="$(jq -r 'if has("linux/amd64") then ."linux/amd64" else . end
+            | .config.Labels["io.modelcontextprotocol.server.name"] // ""' <<<"$config")"
+          if [ "$label" != "$NAME" ]; then
+            echo "::error::$IMAGE has io.modelcontextprotocol.server.name=\"$label\" instead of \"$NAME\": publish the image again with the label (gh workflow run container.yml -f tag=$TAG), then run this workflow again"
+            exit 1
+          fi
+          echo "$IMAGE: io.modelcontextprotocol.server.name=$label"
+
+      - name: Install mcp-publisher
+        if: steps.listed.outputs.listed == 'false'
+        run: |
+          archive=mcp-publisher_linux_amd64.tar.gz
+          curl -fsSL -o "$RUNNER_TEMP/$archive" \
+            "https://github.com/modelcontextprotocol/registry/releases/download/v$MCP_PUBLISHER_VERSION/$archive"
+          echo "$MCP_PUBLISHER_SHA256  $RUNNER_TEMP/$archive" | sha256sum --check --strict
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP" mcp-publisher
+          echo "$RUNNER_TEMP" >>"$GITHUB_PATH"
+
+      - name: Validate server.json
+        if: steps.listed.outputs.listed == 'false'
+        run: mcp-publisher validate server.json
+
+      - name: Log in to the MCP Registry (GitHub OIDC)
+        if: steps.listed.outputs.listed == 'false'
+        run: mcp-publisher login github-oidc
+
+      - name: Publish
+        if: steps.listed.outputs.listed == 'false'
+        run: mcp-publisher publish server.json
+
+      - name: The registry lists the version
+        if: steps.listed.outputs.listed == 'false'
+        env:
+          URL: ${{ steps.listed.outputs.url }}
+        run: |
+          curl -fsS "$URL" | jq '{
+            name: .server.name,
+            version: .server.version,
+            packages: [.server.packages[].identifier],
+            status: ._meta["io.modelcontextprotocol.registry/official"].status,
+            isLatest: ._meta["io.modelcontextprotocol.registry/official"].isLatest
+          }'

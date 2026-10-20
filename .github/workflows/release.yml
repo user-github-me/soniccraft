@@ -3,7 +3,8 @@ name: Release
 # Pushing a version tag (vX.Y.Z, or vX.Y.Z-rc.1 for a pre-release) builds the prebuilt binaries and
 # attaches them to a draft GitHub release. Review the draft, then publish it. Publishing the release also
 # publishes the npm launcher (packages/soniccraft-mcp) when the repository variable NPM_PUBLISH is `true`
-# (with the NPM_TOKEN secret, or npm trusted publishing configured for this workflow file).
+# (with the NPM_TOKEN secret, or npm trusted publishing configured for this workflow file), and
+# .github/workflows/crates.yml publishes the workspace crates to crates.io.
 #
 # Assets of release vX.Y.Z:
 #   soniccraft-vX.Y.Z-<target>.tar.gz (.zip for Windows)   default features: native MP3 encoding with
@@ -59,7 +60,7 @@ jobs:
             exit 1
           fi
           version="$(cargo metadata --no-deps --format-version 1 |
-            jq -r '.packages[] | select(.name == "soniccraft-cli") | .version')"
+            jq -r '.packages[] | select(.name == "soniccraft") | .version')"
           if [ "v$version" != "$TAG" ]; then
             echo "::error file=Cargo.toml::tag $TAG does not match the workspace version $version: set version = \"${TAG#v}\" in [workspace.package], or tag v$version"
             exit 1
@@ -156,7 +157,7 @@ jobs:
           targets: ${{ matrix.platform.target }}
       - name: Build
         run: |
-          flags=(--release --locked -p soniccraft-cli --bins --target "$TARGET")
+          flags=(--release --locked -p soniccraft --bins --target "$TARGET")
           if [ "$FLAVOR" = no-mp3 ]; then
             flags+=(--no-default-features)
           fi

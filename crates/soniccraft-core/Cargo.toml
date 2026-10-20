@@ -6,6 +6,14 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/soniccraft-core"
+readme = "README.md"
+keywords = ["audio", "timeline", "dsl", "json-schema", "yaml"]
+categories = ["parser-implementations", "multimedia::audio"]
+# The published crate: sources, README and license texts.
+# The tests stay in the repository and run there.
+include = ["/src", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 
 [dependencies]
 serde.workspace = true

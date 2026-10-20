@@ -17,7 +17,7 @@ WORKDIR /src
 COPY . .
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/src/target \
-    cargo build --release --locked -p soniccraft-cli \
+    cargo build --release --locked -p soniccraft \
     && mkdir -p /out \
     && cp target/release/soniccraft target/release/soniccraft-mcp /out/
 

@@ -6,6 +6,14 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/soniccraft-engine"
+readme = "README.md"
+keywords = ["audio", "tts", "timeline", "mixing", "podcast"]
+categories = ["multimedia::audio"]
+# The published crate: sources, the embedded web preview, README and license texts.
+# The tests stay in the repository and run there.
+include = ["/src", "/assets/preview.html", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 
 [features]
 default = ["mp3"]

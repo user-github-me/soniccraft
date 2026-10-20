@@ -6,6 +6,14 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/soniccraft-mcp"
+readme = "README.md"
+keywords = ["mcp", "mcp-server", "audio", "tts", "agents"]
+categories = ["artificial-intelligence", "multimedia::audio"]
+# The published crate: sources, the stdio_server example, README and license texts.
+# The tests stay in the repository and run there.
+include = ["/src", "/examples", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 
 [dependencies]
 soniccraft-engine.workspace = true

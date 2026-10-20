@@ -27,7 +27,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-PACKAGE = "soniccraft-cli"
+PACKAGE = "soniccraft"
 
 LICENSE_NAME = re.compile(r"^(licen[cs]e|copying|notice|copyright|unlicense)", re.IGNORECASE)
 LICENSE_DIRS = {"licenses", ".licenses", "licences"}
@@ -65,7 +65,7 @@ def feature_args(options):
 
 
 def built_crates(options):
-    """(name, version) of every package `cargo build -p soniccraft-cli` compiles for the target."""
+    """(name, version) of every package `cargo build -p soniccraft` compiles for the target."""
     out = run(
         ["cargo", "tree", "--locked", "-p", PACKAGE, "-e", "normal", "--target", options.target,
          "--prefix", "none", "--format", "{p}"] + feature_args(options)
@@ -134,7 +134,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--target", help="Rust target triple (default: the host)")
     parser.add_argument("--no-default-features", action="store_true", help="the `-no-mp3` build")
-    parser.add_argument("--features", help="extra cargo features of soniccraft-cli")
+    parser.add_argument("--features", help="extra cargo features of soniccraft")
     parser.add_argument("--output", "-o", help="file to write (default: stdout)")
     options = parser.parse_args()
     options.target = options.target or host_target()

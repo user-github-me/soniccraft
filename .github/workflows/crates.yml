@@ -1,0 +1,90 @@
+name: crates.io
+
+# Publishing a GitHub release (release.yml builds it from a version tag) publishes the workspace crates to
+# crates.io: `cargo publish --workspace --locked` through scripts/publish-crates.py, which skips every crate
+# whose version is already on crates.io (so a re-run, or a manual run for an earlier tag, publishes only
+# what is missing) and waits out crates.io's rate limit for new crates.
+#
+# Authentication: crates.io trusted publishing (GitHub OIDC, rust-lang/crates-io-auth-action), configured
+# on crates.io for each crate (crate settings > Trusted Publishing: owner, repository, workflow
+# `crates.yml`, environment `crates-io`); the temporary token is revoked when the job ends. crates.io
+# offers trusted publishing only for crates that exist, so the first version of a new crate is published
+# with an API token: locally (`cargo login`, then scripts/publish-crates.py), or by this workflow with the
+# CARGO_REGISTRY_TOKEN secret, which it uses when the trusted publishing exchange fails.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish, e.g. v0.1.0 (crates already on crates.io are skipped)
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: crates-io
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  TAG: ${{ inputs.tag || github.event.release.tag_name }}
+
+jobs:
+  publish:
+    name: publish the workspace crates
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    # Named in the crates.io trusted publisher configuration; add protection rules (required reviewers)
+    # in the repository settings to approve each publish.
+    environment: crates-io
+    permissions:
+      contents: read
+      id-token: write # the OIDC token that crates.io exchanges for a temporary publish token
+    env:
+      HAS_TOKEN_SECRET: ${{ secrets.CARGO_REGISTRY_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.TAG }}
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - name: The tag names the workspace version
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::$TAG is not a version tag (vMAJOR.MINOR.PATCH, optionally -PRERELEASE)"
+            exit 1
+          fi
+          version="$(cargo metadata --no-deps --format-version 1 --locked |
+            jq -r '.packages[] | select(.name == "soniccraft") | .version')"
+          if [ "v$version" != "$TAG" ]; then
+            echo "::error file=Cargo.toml::tag $TAG does not match the workspace version $version"
+            exit 1
+          fi
+      - name: Crates whose version is not on crates.io yet
+        id: pending
+        run: |
+          crates="$(python3 scripts/publish-crates.py --list)"
+          echo "${crates:-none: every crate of $TAG is on crates.io}"
+          echo "crates=$(tr '\n' ' ' <<<"$crates" | sed 's/ *$//')" >>"$GITHUB_OUTPUT"
+      # Packages and verifies before the token exists: the publish below reuses this build, so the
+      # 30-minute token is spent on uploads, not on compiling.
+      - name: Package and verify (dry run)
+        if: steps.pending.outputs.crates != ''
+        run: python3 scripts/publish-crates.py --dry-run
+      - name: crates.io token (trusted publishing)
+        id: auth
+        if: steps.pending.outputs.crates != ''
+        # Without a matching trusted publisher (a crate's first version, or not configured yet) the
+        # exchange fails: then the CARGO_REGISTRY_TOKEN secret is used, if there is one.
+        continue-on-error: ${{ env.HAS_TOKEN_SECRET == 'true' }}
+        uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+      - name: Publish
+        if: steps.pending.outputs.crates != ''
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token || secrets.CARGO_REGISTRY_TOKEN }}
+        # --max-wait: rate-limit waits must end well within the trusted publishing token's 30 minutes.
+        run: python3 scripts/publish-crates.py --max-wait 900

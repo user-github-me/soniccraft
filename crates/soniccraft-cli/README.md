@@ -1,4 +1,4 @@
-# soniccraft-cli
+# soniccraft
 
 The `soniccraft` command line for [SonicCraft](https://github.com/user-github-me/soniccraft): compile a
 declarative YAML/JSON audio timeline (TTS speech, music beds, sound effects) into ducked,
@@ -6,8 +6,9 @@ loudness-mastered audio with WebVTT/SRT subtitles. It also ships `soniccraft-mcp
 `soniccraft mcp` for clients that cannot pass arguments.
 
 ```bash
-cargo install --locked --path crates/soniccraft-cli   # from a clone of the repository (Rust 1.89+)
-# or, once published on crates.io: cargo install --locked soniccraft-cli
+cargo install --locked soniccraft     # from crates.io (Rust 1.89+ and a C toolchain, for LAME)
+cargo binstall soniccraft             # or the prebuilt binaries of the GitHub release (cargo-binstall)
+cargo install --locked --path crates/soniccraft-cli   # or from a clone of the repository
 soniccraft --version
 
 soniccraft init demo            # starter timeline + royalty-free assets (renders offline)

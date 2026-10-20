@@ -231,7 +231,8 @@ describe('resolution', { skip: !unix && 'uses shell-script fakes' }, () => {
   test('without a configured release URL the error says how to install', async () => {
     await assert.rejects(
       resolveBinary({ version, release: null, env: { ...NO_PATH, SONICCRAFT_BIN_CACHE: fresh('empty-cache') } }),
-      (e) => e instanceof LauncherError && /cargo install --locked/.test(e.message) && /SONICCRAFT_BIN/.test(e.message),
+      (e) => e instanceof LauncherError && /\(cargo install --locked soniccraft\)/.test(e.message)
+        && /SONICCRAFT_BIN/.test(e.message),
     );
   });
 
@@ -626,7 +627,7 @@ describe('publishing', () => {
   });
 });
 
-// End to end with the real server when a built binary is available (cargo build -p soniccraft-cli, or
+// End to end with the real server when a built binary is available (cargo build -p soniccraft, or
 // SONICCRAFT_TEST_BIN=<path>).
 const built = [
   process.env.SONICCRAFT_TEST_BIN,

@@ -39,7 +39,7 @@ cargo build                                    # all crates
 cargo test --workspace                         # unit + integration tests
 cargo clippy --workspace --all-targets -- -D warnings
 cargo fmt --all
-cargo build -p soniccraft-cli --no-default-features   # LAME-free build (mp3 via ffmpeg)
+cargo build -p soniccraft --no-default-features # LAME-free build (mp3 via ffmpeg)
 (cd packages/soniccraft-mcp && npm test)        # npm launcher; end-to-end tests use target/debug/soniccraft
 (cd packages/soniccraft-web-preview && npm test)
 ```
@@ -51,10 +51,10 @@ when you want exactly the dependency versions in `Cargo.lock`.
 Try your build end to end with no API keys:
 
 ```bash
-cargo run -p soniccraft-cli -- render examples/offline-demo/timeline.mock.yaml --json
+cargo run -p soniccraft -- render examples/offline-demo/timeline.mock.yaml --json
 ```
 
-`cargo run -p soniccraft-cli` runs `soniccraft`; add `--bin soniccraft-mcp` for the MCP binary.
+`cargo run -p soniccraft` runs `soniccraft`; add `--bin soniccraft-mcp` for the MCP binary.
 
 ## Repository checks
 

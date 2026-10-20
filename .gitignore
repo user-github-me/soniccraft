@@ -48,3 +48,6 @@
 *.profraw
 *.profdata
 /coverage/
+
+# Social media kit (posts, banners, screenshots): kept out of the repository
+/social/

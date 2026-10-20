@@ -1,0 +1,15 @@
+{
+  "name": "soniccraft",
+  "displayName": "SonicCraft",
+  "version": "0.1.0",
+  "description": "Compile declarative audio timelines (TTS speech, music beds, sound effects) into ducked, loudness-mastered audio with WebVTT/SRT subtitles. Bundles the SonicCraft Agent Skill and MCP server (requires the soniccraft binary on PATH).",
+  "author": {
+    "name": "SonicCraft contributors"
+  },
+  "homepage": "https://github.com/user-github-me/soniccraft",
+  "repository": "https://github.com/user-github-me/soniccraft",
+  "license": "MIT OR Apache-2.0",
+  "logo": "assets/brand/logo.svg",
+  "keywords": ["audio", "tts", "text-to-speech", "voiceover", "podcast", "ducking", "loudness", "subtitles", "mcp"],
+  "mcpServers": "./.mcp.json"
+}

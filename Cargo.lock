@@ -2350,16 +2350,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "soniccraft-captions"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
- "unicode-segmentation",
-]
-
-[[package]]
-name = "soniccraft-cli"
+name = "soniccraft"
 version = "0.1.0"
 dependencies = [
  "clap",
@@ -2373,6 +2364,15 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
+]
+
+[[package]]
+name = "soniccraft-captions"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "unicode-segmentation",
 ]
 
 [[package]]

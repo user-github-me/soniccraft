@@ -71,7 +71,7 @@ To build soniccraft with a modified LAME:
 4. Build without `--locked`, because the patch changes `Cargo.lock`:
 
    ```bash
-   cargo build --release -p soniccraft-cli
+   cargo build --release -p soniccraft
    cargo tree -i mp3lame-sys    # shows the path of your copy
    ```
 

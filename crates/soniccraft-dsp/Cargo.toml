@@ -6,6 +6,14 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/soniccraft-dsp"
+readme = "README.md"
+keywords = ["audio", "dsp", "loudness", "ebu-r128", "mixing"]
+categories = ["multimedia::audio", "multimedia::encoding"]
+# The published crate: sources, README and license texts.
+# The tests stay in the repository and run there.
+include = ["/src", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 
 [features]
 default = ["mp3"]

@@ -6,6 +6,14 @@ edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
+homepage.workspace = true
+documentation = "https://docs.rs/soniccraft-tts"
+readme = "README.md"
+keywords = ["tts", "text-to-speech", "speech", "elevenlabs", "openai"]
+categories = ["multimedia::audio", "api-bindings"]
+# The published crate: sources, README and license texts.
+# The tests stay in the repository and run there.
+include = ["/src", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 
 [dependencies]
 soniccraft-core.workspace = true

@@ -235,8 +235,8 @@ export async function resolveBinary({
     throw new LauncherError(`SONICCRAFT_FLAVOR is \`${flavorName}\`; use \`mp3\` (the default) or \`no-mp3\`.`);
   }
   const target = targetTriple(platform, arch);
-  const fromSource = 'Build it from source (cargo install --locked --path crates/soniccraft-cli in a clone of '
-    + 'the repository), then run this again or set SONICCRAFT_BIN to its path.';
+  const fromSource = 'Build it from source (cargo install --locked soniccraft), then run this again or set '
+    + 'SONICCRAFT_BIN to its path.';
   if (!target) throw new LauncherError(`There is no prebuilt soniccraft for ${platform}-${arch}. ${fromSource}`);
   const dir = join(cacheRoot(env, platform), `v${version}`, `${target}${FLAVORS[flavorName]}`);
   const cached = join(dir, exeName(platform));
@@ -250,8 +250,8 @@ export async function resolveBinary({
   if (base.includes('/OWNER/')) {
     throw new LauncherError(
       'soniccraft was not found on PATH, and this build of soniccraft-mcp has no release download URL '
-        + 'configured. Install soniccraft (cargo install --locked --path crates/soniccraft-cli in a clone of '
-        + 'the repository), set SONICCRAFT_BIN to its path, or set SONICCRAFT_DOWNLOAD_BASE to a releases URL.',
+        + 'configured. Install soniccraft (cargo install --locked soniccraft), set SONICCRAFT_BIN to its path, '
+        + 'or set SONICCRAFT_DOWNLOAD_BASE to a releases URL.',
     );
   }
   const file = archiveFile(version, target, flavorName);

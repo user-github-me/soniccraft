@@ -84,10 +84,15 @@ jobs:
             type=semver,pattern={{version}},value=${{ env.TAG }}
             type=semver,pattern={{major}}.{{minor}},value=${{ env.TAG }}
             type=raw,value=latest,enable=${{ !contains(env.TAG, '-') }}
+          # io.modelcontextprotocol.server.name proves to the MCP Registry that the image belongs to server.json's
+          # name (io.github.<owner>/soniccraft, see mcp-registry.yml): the registry reads it from the image config's
+          # labels, where these labels go. It is set here rather than in the Dockerfile so that re-publishing an
+          # older release (workflow_dispatch, which builds that tag's Dockerfile) still carries it.
           labels: |
             org.opencontainers.image.title=SonicCraft
             org.opencontainers.image.description=Declarative multi-track audio engine for AI agents: the soniccraft CLI and MCP server, with ffmpeg
             org.opencontainers.image.licenses=MIT OR Apache-2.0
+            io.modelcontextprotocol.server.name=io.github.${{ github.repository_owner }}/soniccraft
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
       - name: Build the amd64 image for the smoke test

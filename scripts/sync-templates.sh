@@ -10,8 +10,8 @@
 # around it to point into. scripts/check-timelines.sh validates each template inside a directory
 # prepared by `soniccraft init`.
 #
-# soniccraft-cli vendors byte-identical copies in crates/soniccraft-cli/templates/ (a test enforces it):
-# copy the regenerated files there too.
+# The CLI crate (package `soniccraft`) vendors byte-identical copies in crates/soniccraft-cli/templates/
+# (a test enforces it): copy the regenerated files there too.
 #
 # Edit the example, then run this script. The other templates (voiceover-with-music.yaml,
 # dialogue-crosstalk.yaml) are hand-written and not touched.

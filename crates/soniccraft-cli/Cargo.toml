@@ -1,20 +1,40 @@
 [package]
-name = "soniccraft-cli"
-description = "The soniccraft command-line interface: validate, plan and render declarative audio timelines, and serve them over MCP"
+# The crates.io name: `cargo install soniccraft` installs the `soniccraft` and `soniccraft-mcp` binaries.
+# The directory stays crates/soniccraft-cli and the library target soniccraft_cli (see [lib]).
+name = "soniccraft"
+description = "The SonicCraft CLI and MCP server: validate, plan and render declarative audio timelines (TTS speech, music, sound effects) to loudness-mastered audio with subtitles"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
+documentation = "https://docs.rs/soniccraft"
 authors.workspace = true
 readme = "README.md"
 keywords = ["audio", "tts", "podcast", "loudness", "mcp"]
-categories = ["command-line-utilities", "multimedia::audio"]
+categories = ["command-line-utilities", "multimedia::audio", "artificial-intelligence"]
+# The published crate: sources, the embedded `soniccraft init` templates, README and license texts. The
+# integration tests stay in the repository (they use its examples/ and skills/).
+include = ["/src", "/templates", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 # The library target only shares code between the two binaries; it is not a stable API.
 autobins = false
-# `cargo run -p soniccraft-cli -- <args>` runs the main CLI.
+# `cargo run -p soniccraft -- <args>` runs the main CLI.
 default-run = "soniccraft"
+
+# `cargo binstall soniccraft` downloads the GitHub release archive of .github/workflows/release.yml (the
+# default flavour, with the LGPL MP3 encoder; licenses/ in the archive) instead of compiling. Each archive
+# holds one directory named like it. No third-party builds (QuickInstall): for a target without a release
+# archive, cargo-binstall compiles from source like `cargo install`.
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/soniccraft-v{ version }-{ target }.tar.gz"
+pkg-fmt = "tgz"
+bin-dir = "soniccraft-v{ version }-{ target }/{ bin }{ binary-ext }"
+disabled-strategies = ["quick-install"]
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-url = "{ repo }/releases/download/v{ version }/soniccraft-v{ version }-{ target }.zip"
+pkg-fmt = "zip"
 
 [features]
 default = ["mp3"]
