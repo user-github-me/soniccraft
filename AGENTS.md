@@ -50,4 +50,6 @@ MCP clients can use the same engine as tools (`soniccraft_validate_timeline`, `s
   also goes into `docs/DESIGN.md` §7 and
   [skills/soniccraft/reference/diagnostics.md](skills/soniccraft/reference/diagnostics.md); note
   user-visible changes in [CHANGELOG.md](CHANGELOG.md) under Unreleased.
+- After editing `skills/soniccraft/`, run `scripts/sync-plugin.sh`: the Claude Code plugin in `plugin/` carries
+  a copy of the skill, and CI fails when the copy is out of date. Keep everything else out of `plugin/`.
 - [CONTRIBUTING.md](CONTRIBUTING.md) covers fixtures, templates and the release process.

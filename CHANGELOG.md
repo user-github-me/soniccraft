@@ -23,6 +23,11 @@ Diagnostic codes and report fields are treated as public API.
 
 ### Changed
 
+- The Claude Code plugin moved to `plugin/`: the manifest with an icon, the MCP server config and a copy of the
+  skill (`scripts/sync-plugin.sh`, checked in CI). Installing the plugin no longer copies the whole repository,
+  and the plugin directory review scans only what the plugin ships. The marketplace in
+  `.claude-plugin/marketplace.json` points at it. The skill's install steps now name Homebrew, Scoop and
+  `cargo install --locked soniccraft`.
 - The CLI package is now named `soniccraft` (it was `soniccraft-cli`), so `cargo install soniccraft` installs
   it. The binaries and the `crates/soniccraft-cli` directory keep their names.
 

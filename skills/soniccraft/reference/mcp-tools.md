@@ -34,15 +34,15 @@ as the SonicCraft plugin.
 | `yaml_path` | string | validate, dry_run, render | Path of a timeline file (synonym: `path`): a regular file of at most 5 MiB. Relative paths resolve against `base_dir`. |
 | `base_dir` | string | validate, dry_run, render | Directory that relative paths resolve against. Default: the server's `--base-dir`, else env `CLAUDE_PROJECT_DIR`, else the server's working directory. A leading `~` is expanded. |
 | `check_credentials` | bool | validate | Also verify API keys with a cheap authenticated request (network). Keys go only where the key policy allows (see [Security](#security)). |
-| `output_path` | string | render | Output file; overrides `output.path`. Its extension selects the format unless `output.format` is set (then pass `format` too). May point anywhere; a timeline's own `output.path` must stay inside `base_dir`. |
+| `output_path` | string | render | Output file; overrides `output.path`. Its extension selects the format unless `output.format` is set (then give `format` too). May point anywhere; a timeline's own `output.path` must stay inside `base_dir`. |
 | `format` | string | render | Output format overriding `output.format`: wav, mp3, flac (built in), ogg, opus, m4a (need ffmpeg); case-insensitive. Pass it when `output_path` names another format than the timeline, otherwise e.g. WAV data lands in an `.mp3` file (the summary then says so). |
 | `export_subtitles` | bool | render | `true`: write the subtitle formats listed in `output.export_subtitles` (vtt + srt when it lists none); `false`: write none. Omit to follow the timeline. |
 | `no_cache` | bool | render | Ignore cached TTS audio and re-synthesize (results are still written to the cache). |
 | `detail` | string | validate, dry_run, render, get_schema | `auto` (default): the whole report while it is small, else a compact one; `summary`: always compact; `full`: everything (get_schema: adds the JSON Schema). |
 | `provider` | string | list_voices | Built-in provider name or alias, e.g. `elevenlabs`, `kokoro`, `macos_say` (case and `-`/`_` do not matter here). |
 
-Prefer absolute paths, or pass `base_dir` explicitly: the server's working directory depends on the client.
-When rendering inline `yaml_content`, also pass `output_path` (or set `output.path`) so you know where the
+Prefer absolute paths, or set `base_dir` explicitly: the server's working directory depends on the client.
+When rendering inline `yaml_content`, also give `output_path` (or set `output.path`) so you know where the
 audio lands.
 
 ## Results

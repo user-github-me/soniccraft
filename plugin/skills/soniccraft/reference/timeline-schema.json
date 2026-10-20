@@ -1,0 +1,2574 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/user-github-me/soniccraft/main/skills/soniccraft/reference/timeline-schema.json",
+  "title": "SonicCraft timeline",
+  "description": "A SonicCraft timeline (DSL v1.0): a declarative multi-track audio composition of text-to-speech cues, music beds and sound effects that SonicCraft compiles into a sidechain-ducked, loudness-mastered audio file with optional WebVTT/SRT subtitles. Keys are snake_case; unknown keys are errors unless they start with `x-` or `x_` (annotations); `null` means the key is absent. Times accept milliseconds (350) or strings with lowercase units such as \"350ms\", \"1.5s\" or \"00:01:30.500\".",
+  "type": "object",
+  "properties": {
+    "version": {
+      "description": "DSL version. Must be \"1.0\" (also accepted: \"1\", 1, 1.0).",
+      "$ref": "#/$defs/Version"
+    },
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional human-readable title (metadata only)."
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Optional description (metadata only)."
+    },
+    "output": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OutputSpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Output file, format and mastering settings."
+    },
+    "subtitles": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SubtitleSpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Caption layout settings. Subtitle export itself is enabled with `output.export_subtitles`."
+    },
+    "timing": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TimingSpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Timing and overlap policy."
+    },
+    "mix": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MixSpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Mix-wide settings."
+    },
+    "defaults": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/VoiceSpec"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Voice settings applied to every speech cue (lowest priority after provider defaults)."
+    },
+    "speakers": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/VoiceSpec"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "description": "Named speakers. A cue or speech track with `speaker: <name>` inherits that speaker's voice.",
+      "patternProperties": {
+        "^x[-_]": {}
+      }
+    },
+    "providers": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": {
+        "allOf": [
+          {
+            "$ref": "#/$defs/ProviderSpec"
+          },
+          {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "description": "Named TTS provider instances. Cues reference them by name via `provider`.\nBuilt-in provider names (elevenlabs, openai, cartesia, kokoro/local_kokoro, piper, macos_say, command, mock)\nwork without any entry here.",
+      "patternProperties": {
+        "^x[-_]": {},
+        "^(elevenlabs|eleven_labs|11labs|openai|open_ai|cartesia|kokoro|local_kokoro|kokoro_fastapi)$": {
+          "anyOf": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/ProviderSpec"
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "type": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "then": {
+                    "$ref": "#/$defs/HttpProviderSettings"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "^(command)$": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/ProviderSpec"
+            },
+            {
+              "if": {
+                "properties": {
+                  "type": {
+                    "type": "null"
+                  }
+                }
+              },
+              "then": {
+                "$ref": "#/$defs/CommandProviderSettings"
+              }
+            }
+          ]
+        },
+        "^(piper)$": {
+          "anyOf": [
+            {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/ProviderSpec"
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "type": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  "then": {
+                    "$ref": "#/$defs/PiperProviderSettings"
+                  }
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "^(macos_say|say|system|mock)$": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProviderSpec"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "tracks": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Track"
+      },
+      "description": "The tracks of the composition. Required and non-empty.",
+      "minItems": 1
+    }
+  },
+  "additionalProperties": false,
+  "patternProperties": {
+    "^x[-_]": {}
+  },
+  "required": [
+    "version",
+    "tracks"
+  ],
+  "$defs": {
+    "Version": {
+      "description": "DSL version. Use \"1.0\".",
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[vV]?1(\\.[0-9]+)?$"
+        },
+        {
+          "type": "number",
+          "minimum": 1,
+          "exclusiveMaximum": 2
+        }
+      ],
+      "examples": [
+        "1.0"
+      ]
+    },
+    "OutputSpec": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OutputFormatName"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Container/codec: wav, mp3, flac, ogg, opus or m4a. Default: from the output path extension, else wav.\nogg, opus and m4a require ffmpeg on PATH."
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Output path relative to the timeline file. Default: `<timeline stem>.<ext>` next to the timeline.",
+          "pattern": "\\S"
+        },
+        "sample_rate": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Output sample rate in Hz. Default 48000.",
+          "minimum": 8000,
+          "maximum": 192000
+        },
+        "channels": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Output channel count: 1 (mono) or 2 (stereo). Default 2.",
+          "enum": [
+            1,
+            2,
+            null
+          ]
+        },
+        "bitrate": {
+          "description": "Bitrate for lossy formats, e.g. \"320k\", \"192k\" or 192000. Default mp3 192k, ogg 160k, opus 96k, m4a 160k.",
+          "type": [
+            "number",
+            "string",
+            "null"
+          ]
+        },
+        "bit_depth": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Bit depth for wav (16, 24, or 32 = float) and flac (16 or 24). Default 24.",
+          "enum": [
+            16,
+            24,
+            32,
+            null
+          ]
+        },
+        "loudness_preset": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LoudnessPresetName"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Loudness preset: podcast (-16 LUFS, -1 dBTP), streaming (-14, -1), broadcast (EBU R128: -23, -1),\natsc (A/85: -24, -2). Default podcast."
+        },
+        "target_lufs": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Integrated loudness target of the master in LUFS (overrides the preset). Range -60..-5.",
+          "minimum": -60,
+          "maximum": -5
+        },
+        "true_peak_db": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Maximum true peak of the master in dBTP (overrides the preset). Range -9..0.",
+          "minimum": -9,
+          "maximum": 0
+        },
+        "normalize": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Apply master loudness normalization. Default true. When false, the true-peak limiter still runs as a clip guard."
+        },
+        "export_subtitles": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SubtitleExport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Export subtitles: true (= vtt + srt), false, or a list of formats from vtt, srt, json (captions + word\ntimestamps) and transcript (HyperFrames-compatible word array)."
+        },
+        "export_stems": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Export one 32-bit float WAV stem per track to `<output stem>.stems/`. Default false."
+        },
+        "export_manifest": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Write the render report to `<output stem>.manifest.json`. Default false."
+        },
+        "tail_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Time after the last finite item (speech, non-looping clips) before the end. Default: the longest\n`fade_out_ms` among looping/open-ended beds, else 0."
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PositiveMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Force the total duration. Content beyond it is cut."
+        },
+        "dither": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "TPDF dither when writing 16-bit PCM. Default true."
+        }
+      },
+      "description": "Output file, format and mastering settings.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      },
+      "allOf": [
+        {
+          "if": {
+            "anyOf": [
+              {
+                "required": [
+                  "format"
+                ],
+                "properties": {
+                  "format": {
+                    "enum": [
+                      "mp3",
+                      "ogg",
+                      "opus",
+                      "m4a",
+                      "vorbis",
+                      "aac",
+                      "mp4"
+                    ]
+                  }
+                }
+              },
+              {
+                "allOf": [
+                  {
+                    "properties": {
+                      "format": {
+                        "type": "null"
+                      }
+                    }
+                  },
+                  {
+                    "required": [
+                      "path"
+                    ],
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "pattern": "[^/\\\\]\\.([mM][pP]3|[oO][gG][gG]|[oO][pP][uU][sS]|[mM]4[aA]|[vV][oO][rR][bB][iI][sS]|[aA][aA][cC]|[mM][pP]4)$"
+                      }
+                    }
+                  }
+                ]
+              }
+            ]
+          },
+          "then": {
+            "properties": {
+              "bitrate": {
+                "anyOf": [
+                  {
+                    "$ref": "#/$defs/Bitrate"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "OutputFormatName": {
+      "type": "string",
+      "enum": [
+        "wav",
+        "mp3",
+        "flac",
+        "ogg",
+        "opus",
+        "m4a",
+        "wave",
+        "vorbis",
+        "aac",
+        "mp4"
+      ],
+      "description": "Output container/codec."
+    },
+    "Bitrate": {
+      "description": "Bitrate for lossy formats: a string like \"320k\" or \"192kbps\", or a number (bits per second; values below 1000 are kbps). At most 10 Mbit/s.",
+      "anyOf": [
+        {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 10000000
+        },
+        {
+          "type": "string",
+          "allOf": [
+            {
+              "pattern": "^\\s*([0-9]+(\\.[0-9]*)?|\\.[0-9]+)\\s*([kK]\\s*)?([bB][pP][sS])?\\s*$"
+            },
+            {
+              "pattern": "^\\s*0*(([0-9]{0,4}(\\.[0-9]*)?|10000(\\.0*)?)\\s*[kK]|([0-9]{0,7}(\\.[0-9]*)?|10000000(\\.0*)?))\\s*([bB][pP][sS])?\\s*$"
+            },
+            {
+              "pattern": "[1-9]"
+            }
+          ]
+        }
+      ]
+    },
+    "LoudnessPresetName": {
+      "type": "string",
+      "enum": [
+        "podcast",
+        "streaming",
+        "broadcast",
+        "atsc",
+        "ebu_r128",
+        "ebu",
+        "atsc_a85",
+        "a85"
+      ],
+      "description": "Master loudness preset."
+    },
+    "SubtitleExport": {
+      "anyOf": [
+        {
+          "type": "boolean",
+          "description": "true = vtt + srt."
+        },
+        {
+          "type": "string",
+          "description": "A single format name.",
+          "enum": [
+            "vtt",
+            "srt",
+            "json",
+            "transcript",
+            "webvtt",
+            "words",
+            "hyperframes"
+          ]
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "vtt",
+              "srt",
+              "json",
+              "transcript",
+              "webvtt",
+              "words",
+              "hyperframes"
+            ]
+          },
+          "description": "Several format names."
+        }
+      ],
+      "description": "Subtitle export switch: `true` (= vtt + srt), `false`, a single format, or a list of formats (vtt, srt, json)."
+    },
+    "Millis": {
+      "description": "Signed time value (negative values move the anchor earlier): a number of milliseconds (at most 86400000 = 24 h), or a string with lowercase units such as \"350ms\", \"1.5s\", \"2m\", \"1m30s\", \"01:30.5\" or \"00:01:30.500\".",
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": -86400000,
+          "maximum": 86400000
+        },
+        {
+          "type": "string",
+          "pattern": "^[ \\t\\n\\r]*([+-][ \\t\\n\\r]*)?((([0-9]+(\\.[0-9]*)?|\\.[0-9]+)[ \\t\\n\\r]*(ms|msecs?|milliseconds?|s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?)[ \\t\\n\\r]*)+|([0-9]+(\\.[0-9]*)?|\\.[0-9]+)|[0-9]+[ \\t\\n\\r]*:[ \\t\\n\\r]*([0-5]?[0-9][ \\t\\n\\r]*:[ \\t\\n\\r]*)?[0-5]?[0-9](\\.[0-9]*)?)[ \\t\\n\\r]*$"
+        }
+      ]
+    },
+    "SubtitleSpec": {
+      "type": "object",
+      "properties": {
+        "max_chars_per_line": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Maximum characters per caption line. Default 42.",
+          "minimum": 1
+        },
+        "max_lines": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Maximum lines per caption. Default 2.",
+          "minimum": 1
+        },
+        "max_duration_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PositiveMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Maximum on-screen duration of one caption. Default 6000 ms."
+        },
+        "min_duration_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Minimum on-screen duration of one caption (extended when possible). Default 800 ms."
+        },
+        "speaker_labels": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Prefix captions with speaker labels. Default: on when there are 2+ distinct speakers."
+        }
+      },
+      "description": "Caption layout settings.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      }
+    },
+    "TimingSpec": {
+      "type": "object",
+      "properties": {
+        "speech_overlap": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OverlapPolicyName"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "What to do when speech cues overlap: push (default; moves implicitly-placed cues later), warn, error, allow."
+        },
+        "min_gap_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Gap inserted when `push` moves a cue that has no explicit preceding pause. Default 250 ms."
+        },
+        "overlap_tolerance_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Overlaps shorter than this are ignored. Default 20 ms."
+        }
+      },
+      "description": "Timing and overlap policy.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      }
+    },
+    "OverlapPolicyName": {
+      "type": "string",
+      "enum": [
+        "push",
+        "warn",
+        "error",
+        "allow"
+      ],
+      "description": "Speech overlap policy."
+    },
+    "MixSpec": {
+      "type": "object",
+      "properties": {
+        "reference_lufs": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Source-level normalization target in LUFS for tracks with `normalize` enabled. Default -20.",
+          "minimum": -70,
+          "maximum": -5
+        }
+      },
+      "description": "Mix-wide settings.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      }
+    },
+    "VoiceSpec": {
+      "type": "object",
+      "properties": {
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Provider instance name (a key of `providers`, or a built-in provider name).",
+          "pattern": "\\S"
+        },
+        "voice_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Provider-specific voice identifier (e.g. an ElevenLabs voice id, an OpenAI voice name, a Kokoro voice like am_adam).",
+          "pattern": "\\S"
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Provider model id (e.g. eleven_multilingual_v2, gpt-4o-mini-tts, sonic-2).",
+          "pattern": "\\S"
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Language code passed to providers that support it (e.g. \"en\").",
+          "pattern": "\\S"
+        },
+        "settings": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true,
+          "description": "Provider-specific voice settings (e.g. ElevenLabs stability/similarity_boost, OpenAI instructions, speed)."
+        },
+        "gain_db": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Extra gain in dB for this speaker's cues.",
+          "minimum": -60,
+          "maximum": 24
+        },
+        "label": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Display name used in subtitles. Default: the speaker key."
+        }
+      },
+      "description": "Voice settings. Used for `defaults`, entries of `speakers`, and inline on speech tracks and cues.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      }
+    },
+    "ProviderSpec": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProviderTypeName"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Built-in provider type: elevenlabs, openai, cartesia, kokoro, piper, macos_say, command or mock.\nDefaults to the instance name when that is a built-in name or alias."
+        },
+        "api_key_env": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Name of the environment variable that holds the API key (never put keys in the timeline)."
+        },
+        "base_url": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "API base URL override."
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Default model for this instance."
+        },
+        "output_format": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Provider-native audio format override (e.g. ElevenLabs \"mp3_44100_128\")."
+        },
+        "max_concurrency": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Maximum parallel requests to this instance.",
+          "minimum": 1
+        },
+        "timeout_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Per-request timeout in milliseconds. Default 120000.",
+          "minimum": 1
+        },
+        "chars_per_second": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Speaking rate (characters per second, spaces and punctuation included) assumed for dry-run duration\nestimates. Preferred over `words_per_minute`.",
+          "exclusiveMinimum": 0
+        },
+        "words_per_minute": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Speaking rate (words per minute) assumed for dry-run estimates when `chars_per_second` is not set.",
+          "exclusiveMinimum": 0
+        },
+        "settings": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true,
+          "description": "Default voice settings for cues using this instance."
+        },
+        "command": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "description": "argv template for `command`/`piper` providers. Placeholders: {text}, {text_file}, {output}, {voice_id}, {model}, {language}."
+        },
+        "stdin": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Template written to the child's stdin for `command`/`piper` providers, e.g. \"{text}\"."
+        },
+        "voices_dir": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Directory searched for `<voice_id>.onnx` (piper)."
+        }
+      },
+      "description": "A named TTS provider instance.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      },
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "elevenlabs",
+                  "eleven_labs",
+                  "11labs",
+                  "openai",
+                  "open_ai",
+                  "cartesia",
+                  "kokoro",
+                  "local_kokoro",
+                  "kokoro_fastapi"
+                ]
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/HttpProviderSettings"
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "command"
+                ]
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/CommandProviderSettings"
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "piper"
+                ]
+              }
+            }
+          },
+          "then": {
+            "$ref": "#/$defs/PiperProviderSettings"
+          }
+        }
+      ]
+    },
+    "ProviderTypeName": {
+      "type": "string",
+      "enum": [
+        "elevenlabs",
+        "openai",
+        "cartesia",
+        "kokoro",
+        "piper",
+        "macos_say",
+        "command",
+        "mock",
+        "eleven_labs",
+        "11labs",
+        "open_ai",
+        "local_kokoro",
+        "kokoro_fastapi",
+        "say",
+        "system"
+      ],
+      "description": "Built-in TTS provider type."
+    },
+    "Track": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique id (shared namespace with cue and clip ids).",
+          "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:-]*$"
+        },
+        "type": {
+          "description": "Track type: speech, music or sfx.",
+          "$ref": "#/$defs/TrackKindName"
+        },
+        "volume": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Linear fader gain (1.0 = unity). Default 1.0.",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "gain_db": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Extra fader gain in dB. Default 0.",
+          "minimum": -60,
+          "maximum": 24
+        },
+        "pan": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Stereo position from -1 (left) to 1 (right). Default 0.",
+          "minimum": -1,
+          "maximum": 1
+        },
+        "mute": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Exclude the track from the mix (it is still laid out). Default false."
+        },
+        "normalize": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NormalizeInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Source-level loudness normalization: true/false or {target_lufs}. Default: speech and music true, sfx false."
+        },
+        "start_at_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Absolute start of the track's first item (when that item has no explicit start)."
+        },
+        "start_relative": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Anchor"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Relative start of the track's first item."
+        },
+        "ducking": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DuckingSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Duck this track while other tracks are active."
+        },
+        "sequence": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/SequenceItem"
+          },
+          "description": "(speech) Ordered cues and pauses.",
+          "minItems": 1
+        },
+        "speaker": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "(speech) Speaker name for all cues of this track.",
+          "pattern": "\\S"
+        },
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "(speech) Provider instance for all cues of this track.",
+          "pattern": "\\S"
+        },
+        "voice_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "(speech) Voice id for all cues of this track.",
+          "pattern": "\\S"
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "(speech) Model for all cues of this track.",
+          "pattern": "\\S"
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "(speech) Language for all cues of this track.",
+          "pattern": "\\S"
+        },
+        "settings": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true,
+          "description": "(speech) Provider-specific voice settings for all cues of this track."
+        },
+        "trim_silence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TrimSilenceInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "(speech) Trim leading/trailing silence from synthesized cues: true/false or {threshold_db, padding_ms}. Default true."
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "(music/sfx) Audio file path, relative to the timeline file.",
+          "pattern": "\\S"
+        },
+        "loop": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "(music/sfx) Loop the source to fill the clip length (open-ended loops run until the timeline end)."
+        },
+        "loop_crossfade_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "(music/sfx) Equal-power crossfade at loop seams. Default 0."
+        },
+        "fade_in_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "(music/sfx) Fade-in length. Default 0."
+        },
+        "fade_out_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "(music/sfx) Fade-out length. Default 0."
+        },
+        "fade_curve": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FadeCurveName"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "(music/sfx) Fade shape: equal_power (default), linear, exponential."
+        },
+        "trim_start_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "(music/sfx) Offset into the source where playback begins. Default 0."
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PositiveMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "(music/sfx) Play length."
+        },
+        "end_at_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "(music/sfx) Absolute end time."
+        },
+        "end_relative": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EndAnchor"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "(music/sfx) Relative end time."
+        },
+        "clips": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/Clip"
+          },
+          "description": "(music/sfx) Multiple clips placed on this track (alternative to the single-clip shorthand).",
+          "minItems": 1
+        }
+      },
+      "description": "A track. `type` selects which fields apply: speech tracks use `sequence` and voice fields; music and sfx\ntracks use either clip fields directly (single-clip shorthand) or a `clips` list.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      },
+      "required": [
+        "id",
+        "type"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "const": "speech"
+              }
+            }
+          },
+          "then": {
+            "allOf": [
+              {
+                "required": [
+                  "sequence"
+                ],
+                "properties": {
+                  "sequence": {
+                    "not": {
+                      "type": "null"
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "source": {
+                    "type": "null"
+                  },
+                  "loop": {
+                    "type": "null"
+                  },
+                  "loop_crossfade_ms": {
+                    "type": "null"
+                  },
+                  "fade_in_ms": {
+                    "type": "null"
+                  },
+                  "fade_out_ms": {
+                    "type": "null"
+                  },
+                  "fade_curve": {
+                    "type": "null"
+                  },
+                  "trim_start_ms": {
+                    "type": "null"
+                  },
+                  "duration_ms": {
+                    "type": "null"
+                  },
+                  "end_at_ms": {
+                    "type": "null"
+                  },
+                  "end_relative": {
+                    "type": "null"
+                  },
+                  "clips": {
+                    "type": "null"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "music",
+                  "sfx"
+                ]
+              }
+            }
+          },
+          "then": {
+            "allOf": [
+              {
+                "anyOf": [
+                  {
+                    "required": [
+                      "source"
+                    ],
+                    "properties": {
+                      "source": {
+                        "not": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "required": [
+                      "clips"
+                    ],
+                    "properties": {
+                      "clips": {
+                        "not": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "properties": {
+                  "sequence": {
+                    "type": "null"
+                  },
+                  "speaker": {
+                    "type": "null"
+                  },
+                  "provider": {
+                    "type": "null"
+                  },
+                  "voice_id": {
+                    "type": "null"
+                  },
+                  "model": {
+                    "type": "null"
+                  },
+                  "language": {
+                    "type": "null"
+                  },
+                  "settings": {
+                    "type": "null"
+                  },
+                  "trim_silence": {
+                    "type": "null"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "anyOf": [
+            {
+              "properties": {
+                "clips": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "properties": {
+                "source": {
+                  "type": "null"
+                },
+                "loop": {
+                  "type": "null"
+                },
+                "loop_crossfade_ms": {
+                  "type": "null"
+                },
+                "fade_in_ms": {
+                  "type": "null"
+                },
+                "fade_out_ms": {
+                  "type": "null"
+                },
+                "fade_curve": {
+                  "type": "null"
+                },
+                "trim_start_ms": {
+                  "type": "null"
+                },
+                "duration_ms": {
+                  "type": "null"
+                },
+                "end_at_ms": {
+                  "type": "null"
+                },
+                "end_relative": {
+                  "type": "null"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "properties": {
+                "start_relative": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "properties": {
+                "start_at_ms": {
+                  "type": "null"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "properties": {
+                "end_at_ms": {
+                  "type": "null"
+                },
+                "end_relative": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "properties": {
+                "duration_ms": {
+                  "type": "null"
+                },
+                "end_relative": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "properties": {
+                "duration_ms": {
+                  "type": "null"
+                },
+                "end_at_ms": {
+                  "type": "null"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "if": {
+            "required": [
+              "start_relative"
+            ],
+            "properties": {
+              "start_relative": {
+                "not": {
+                  "type": "null"
+                },
+                "required": [
+                  "before_cue"
+                ],
+                "properties": {
+                  "before_cue": {
+                    "not": {
+                      "type": "null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "end_at_ms": {
+                "type": "null"
+              },
+              "end_relative": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "allOf": [
+              {
+                "required": [
+                  "start_relative"
+                ],
+                "properties": {
+                  "start_relative": {
+                    "not": {
+                      "type": "null"
+                    },
+                    "required": [
+                      "before_cue"
+                    ],
+                    "properties": {
+                      "before_cue": {
+                        "not": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "required": [
+                  "loop"
+                ],
+                "properties": {
+                  "loop": {
+                    "const": true
+                  }
+                }
+              }
+            ]
+          },
+          "then": {
+            "required": [
+              "duration_ms"
+            ],
+            "properties": {
+              "duration_ms": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "TrackKindName": {
+      "type": "string",
+      "enum": [
+        "speech",
+        "music",
+        "sfx"
+      ],
+      "description": "Track type."
+    },
+    "NormalizeInput": {
+      "anyOf": [
+        {
+          "type": "boolean",
+          "description": "Enable (target = mix.reference_lufs) or disable."
+        },
+        {
+          "$ref": "#/$defs/NormalizeSpec",
+          "description": "Enable with an explicit target."
+        }
+      ],
+      "description": "Source-level normalization: `true`, `false`, or `{target_lufs: -20}`."
+    },
+    "NormalizeSpec": {
+      "type": "object",
+      "properties": {
+        "target_lufs": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Integrated loudness target in LUFS for each source on this track.",
+          "minimum": -70,
+          "maximum": -5
+        }
+      },
+      "description": "Explicit source normalization target.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      }
+    },
+    "Anchor": {
+      "type": "object",
+      "properties": {
+        "after_cue": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Anchor at the END of this item: start = end(ref) + offset.",
+          "pattern": "\\S"
+        },
+        "with_cue": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Anchor at the START of this item: start = start(ref) + offset.",
+          "pattern": "\\S"
+        },
+        "before_cue": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "(start_relative only) This item ENDS at start(ref) + offset.",
+          "pattern": "\\S"
+        },
+        "offset_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Millis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Signed offset added to the anchor time. Default 0."
+        }
+      },
+      "description": "A relative time anchor. Exactly one of `after_cue`, `with_cue`, `before_cue`.\nThe referenced id may be a cue, a clip or a track.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      },
+      "oneOf": [
+        {
+          "required": [
+            "after_cue"
+          ],
+          "properties": {
+            "after_cue": {
+              "not": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "required": [
+            "with_cue"
+          ],
+          "properties": {
+            "with_cue": {
+              "not": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "required": [
+            "before_cue"
+          ],
+          "properties": {
+            "before_cue": {
+              "not": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "DuckingSpec": {
+      "type": "object",
+      "properties": {
+        "trigger_tracks": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "\\S"
+          },
+          "description": "Track ids whose activity ducks this track. Required.",
+          "minItems": 1
+        },
+        "reduction_db": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Attenuation depth in dB (sign ignored: -18 and 18 both attenuate by 18 dB). Default -15.",
+          "minimum": -60,
+          "maximum": 60
+        },
+        "attack_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Ramp time from 0 dB to full depth. Default 80 ms."
+        },
+        "release_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Ramp time from full depth back to 0 dB. Default 400 ms."
+        },
+        "hold_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Gaps shorter than this keep the duck engaged; activity is held this long. Default 250 ms."
+        },
+        "lookahead_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Detect activity this much earlier so the bed is fully ducked when speech begins. Default = attack_ms."
+        },
+        "threshold_db": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "RMS threshold in dBFS for sidechain mode. Default -40.",
+          "minimum": -100,
+          "maximum": 0
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DuckingModeName"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "sidechain (default, signal-driven) or cue (timeline-driven)."
+        }
+      },
+      "description": "Sidechain ducking of a track while trigger tracks are active.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      },
+      "required": [
+        "trigger_tracks"
+      ]
+    },
+    "DuckingModeName": {
+      "type": "string",
+      "enum": [
+        "sidechain",
+        "cue",
+        "timeline"
+      ],
+      "description": "Ducking detector mode."
+    },
+    "SequenceItem": {
+      "type": "object",
+      "properties": {
+        "pause_duration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Pause length (pause items only), e.g. 350 or \"350ms\"."
+        },
+        "pause": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Alias of `pause_duration`."
+        },
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Cue id. Default `<track_id>.cue<n>`.",
+          "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:-]*$"
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Text to speak. Required for cues.",
+          "pattern": "\\S"
+        },
+        "caption": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Subtitle text override (defaults to `text`).",
+          "pattern": "\\S"
+        },
+        "subtitles": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Include this cue in subtitle files. Default true."
+        },
+        "speaker": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Speaker name (see `speakers`).",
+          "pattern": "\\S"
+        },
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Provider instance override.",
+          "pattern": "\\S"
+        },
+        "voice_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Voice id override.",
+          "pattern": "\\S"
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Model override.",
+          "pattern": "\\S"
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Language override.",
+          "pattern": "\\S"
+        },
+        "settings": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true,
+          "description": "Provider-specific voice settings (merged over speaker/track/defaults settings)."
+        },
+        "start_at_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Absolute start time. Without a start the cue follows the previous item of its track."
+        },
+        "start_relative": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Anchor"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Start relative to another cue, clip or track."
+        },
+        "volume": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Per-cue linear gain. Default 1.0.",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "gain_db": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Per-cue gain in dB. Default 0.",
+          "minimum": -60,
+          "maximum": 24
+        },
+        "allow_overlap": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Allow this cue to overlap other speech (intentional crosstalk). Default false."
+        }
+      },
+      "description": "An item of a speech track's `sequence`: either a pause (`pause_duration` or `pause`) or a cue (`text` + optional fields).",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      },
+      "oneOf": [
+        {
+          "title": "Pause",
+          "description": "A pause: exactly one of `pause_duration` or `pause`, and nothing else.",
+          "oneOf": [
+            {
+              "required": [
+                "pause_duration"
+              ],
+              "properties": {
+                "pause_duration": {
+                  "not": {
+                    "type": "null"
+                  }
+                }
+              }
+            },
+            {
+              "required": [
+                "pause"
+              ],
+              "properties": {
+                "pause": {
+                  "not": {
+                    "type": "null"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "pause_duration": true,
+            "pause": true
+          },
+          "patternProperties": {
+            "^x[-_]": true
+          },
+          "additionalProperties": {
+            "type": "null"
+          }
+        },
+        {
+          "title": "Cue",
+          "description": "A speech cue: requires `text`; pause keys are not allowed; at most one of `start_at_ms` / `start_relative`.",
+          "allOf": [
+            {
+              "required": [
+                "text"
+              ],
+              "properties": {
+                "text": {
+                  "not": {
+                    "type": "null"
+                  }
+                }
+              }
+            },
+            {
+              "properties": {
+                "pause_duration": {
+                  "type": "null"
+                },
+                "pause": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "anyOf": [
+                {
+                  "properties": {
+                    "start_relative": {
+                      "type": "null"
+                    }
+                  }
+                },
+                {
+                  "properties": {
+                    "start_at_ms": {
+                      "type": "null"
+                    }
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "TrimSilenceInput": {
+      "anyOf": [
+        {
+          "type": "boolean",
+          "description": "Enable with defaults (-50 dBFS, 30 ms padding) or disable."
+        },
+        {
+          "$ref": "#/$defs/TrimSilenceSpec",
+          "description": "Enable with explicit parameters."
+        }
+      ],
+      "description": "Silence trimming for synthesized speech: `true`, `false`, or `{threshold_db, padding_ms}`."
+    },
+    "TrimSilenceSpec": {
+      "type": "object",
+      "properties": {
+        "threshold_db": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Level below which audio counts as silence, in dBFS. Default -50.",
+          "minimum": -100,
+          "maximum": 0
+        },
+        "padding_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Silence kept before the first and after the last audible frame. Default 30 ms."
+        }
+      },
+      "description": "Silence trimming parameters.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      }
+    },
+    "FadeCurveName": {
+      "type": "string",
+      "enum": [
+        "equal_power",
+        "linear",
+        "exponential",
+        "equalpower",
+        "sine",
+        "constant_power",
+        "exp",
+        "log",
+        "logarithmic"
+      ],
+      "description": "Fade curve shape."
+    },
+    "Clip": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Clip id. Default `<track_id>.clip<n>`.",
+          "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.:-]*$"
+        },
+        "source": {
+          "type": "string",
+          "description": "Audio file path, relative to the timeline file. Required.",
+          "pattern": "\\S"
+        },
+        "start_at_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Absolute start time. Without a start the clip follows the previous clip (minus `crossfade_ms`)."
+        },
+        "start_relative": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Anchor"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Start relative to a cue, clip or track."
+        },
+        "trim_start_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Offset into the source where playback begins. Default 0."
+        },
+        "duration_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PositiveMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Play length."
+        },
+        "end_at_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Absolute end time."
+        },
+        "end_relative": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EndAnchor"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Relative end time."
+        },
+        "loop": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Loop the source to fill the clip length."
+        },
+        "loop_crossfade_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Equal-power crossfade at loop seams. Default 0."
+        },
+        "fade_in_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Fade-in length. Default 0."
+        },
+        "fade_out_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Fade-out length. Default 0."
+        },
+        "fade_curve": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FadeCurveName"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Fade shape: equal_power (default), linear, exponential."
+        },
+        "crossfade_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NonNegativeMillis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Overlap with the previous clip of this track, with equal-power fades on both sides. Default 0. Only a\nclip without its own start (no `start_at_ms`/`start_relative`) crossfades; elsewhere it is ignored."
+        },
+        "volume": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Per-clip linear gain. Default 1.0.",
+          "minimum": 0,
+          "maximum": 4
+        },
+        "gain_db": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Per-clip gain in dB. Default 0.",
+          "minimum": -60,
+          "maximum": 24
+        }
+      },
+      "description": "A clip on a music or sfx track.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      },
+      "required": [
+        "source"
+      ],
+      "allOf": [
+        {
+          "anyOf": [
+            {
+              "properties": {
+                "start_relative": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "properties": {
+                "start_at_ms": {
+                  "type": "null"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "anyOf": [
+            {
+              "properties": {
+                "end_at_ms": {
+                  "type": "null"
+                },
+                "end_relative": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "properties": {
+                "duration_ms": {
+                  "type": "null"
+                },
+                "end_relative": {
+                  "type": "null"
+                }
+              }
+            },
+            {
+              "properties": {
+                "duration_ms": {
+                  "type": "null"
+                },
+                "end_at_ms": {
+                  "type": "null"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "if": {
+            "required": [
+              "start_relative"
+            ],
+            "properties": {
+              "start_relative": {
+                "not": {
+                  "type": "null"
+                },
+                "required": [
+                  "before_cue"
+                ],
+                "properties": {
+                  "before_cue": {
+                    "not": {
+                      "type": "null"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "end_at_ms": {
+                "type": "null"
+              },
+              "end_relative": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "allOf": [
+              {
+                "required": [
+                  "start_relative"
+                ],
+                "properties": {
+                  "start_relative": {
+                    "not": {
+                      "type": "null"
+                    },
+                    "required": [
+                      "before_cue"
+                    ],
+                    "properties": {
+                      "before_cue": {
+                        "not": {
+                          "type": "null"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "required": [
+                  "loop"
+                ],
+                "properties": {
+                  "loop": {
+                    "const": true
+                  }
+                }
+              }
+            ]
+          },
+          "then": {
+            "required": [
+              "duration_ms"
+            ],
+            "properties": {
+              "duration_ms": {
+                "not": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "NonNegativeMillis": {
+      "description": "Time value (0 or more): a number of milliseconds (at most 86400000 = 24 h), or a string with lowercase units such as \"350ms\", \"1.5s\", \"2m\", \"1m30s\", \"01:30.5\" or \"00:01:30.500\".",
+      "anyOf": [
+        {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 86400000
+        },
+        {
+          "type": "string",
+          "pattern": "^[ \\t\\n\\r]*((\\+[ \\t\\n\\r]*)?((([0-9]+(\\.[0-9]*)?|\\.[0-9]+)[ \\t\\n\\r]*(ms|msecs?|milliseconds?|s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?)[ \\t\\n\\r]*)+|([0-9]+(\\.[0-9]*)?|\\.[0-9]+)|[0-9]+[ \\t\\n\\r]*:[ \\t\\n\\r]*([0-5]?[0-9][ \\t\\n\\r]*:[ \\t\\n\\r]*)?[0-5]?[0-9](\\.[0-9]*)?)|-[ \\t\\n\\r]*(((0+(\\.0*)?|\\.0+)[ \\t\\n\\r]*(ms|msecs?|milliseconds?|s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?)[ \\t\\n\\r]*)+|(0+(\\.0*)?|\\.0+)|0+[ \\t\\n\\r]*:[ \\t\\n\\r]*(0?0[ \\t\\n\\r]*:[ \\t\\n\\r]*)?0?0(\\.0*)?))[ \\t\\n\\r]*$"
+        }
+      ]
+    },
+    "PositiveMillis": {
+      "description": "Length (greater than 0): a number of milliseconds (at most 86400000 = 24 h), or a string with lowercase units such as \"350ms\", \"1.5s\", \"2m\", \"1m30s\", \"01:30.5\" or \"00:01:30.500\".",
+      "anyOf": [
+        {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 86400000
+        },
+        {
+          "type": "string",
+          "allOf": [
+            {
+              "pattern": "^[ \\t\\n\\r]*((\\+[ \\t\\n\\r]*)?((([0-9]+(\\.[0-9]*)?|\\.[0-9]+)[ \\t\\n\\r]*(ms|msecs?|milliseconds?|s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?)[ \\t\\n\\r]*)+|([0-9]+(\\.[0-9]*)?|\\.[0-9]+)|[0-9]+[ \\t\\n\\r]*:[ \\t\\n\\r]*([0-5]?[0-9][ \\t\\n\\r]*:[ \\t\\n\\r]*)?[0-5]?[0-9](\\.[0-9]*)?)|-[ \\t\\n\\r]*(((0+(\\.0*)?|\\.0+)[ \\t\\n\\r]*(ms|msecs?|milliseconds?|s|secs?|seconds?|m|mins?|minutes?|h|hrs?|hours?)[ \\t\\n\\r]*)+|(0+(\\.0*)?|\\.0+)|0+[ \\t\\n\\r]*:[ \\t\\n\\r]*(0?0[ \\t\\n\\r]*:[ \\t\\n\\r]*)?0?0(\\.0*)?))[ \\t\\n\\r]*$"
+            },
+            {
+              "pattern": "[1-9]"
+            }
+          ]
+        }
+      ]
+    },
+    "EndAnchor": {
+      "type": "object",
+      "properties": {
+        "after_cue": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Anchor at the END of this item: start = end(ref) + offset.",
+          "pattern": "\\S"
+        },
+        "with_cue": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Anchor at the START of this item: start = start(ref) + offset.",
+          "pattern": "\\S"
+        },
+        "before_cue": {
+          "type": "null",
+          "description": "Not valid in `end_relative` (`before_cue` is only valid in `start_relative`)."
+        },
+        "offset_ms": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Millis"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Signed offset added to the anchor time. Default 0."
+        }
+      },
+      "description": "A relative end time. Exactly one of `after_cue` (end = end(ref) + offset) or `with_cue` (end = start(ref) + offset); `before_cue` is only valid in `start_relative`.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^x[-_]": {}
+      },
+      "oneOf": [
+        {
+          "required": [
+            "after_cue"
+          ],
+          "properties": {
+            "after_cue": {
+              "not": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "required": [
+            "with_cue"
+          ],
+          "properties": {
+            "with_cue": {
+              "not": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "HttpProviderSettings": {
+      "description": "Checks of the HTTP providers (elevenlabs, openai, cartesia, kokoro).",
+      "properties": {
+        "api_key_env": {
+          "pattern": "^\\s*[A-Za-z_][A-Za-z0-9_]*\\s*$"
+        },
+        "base_url": {
+          "allOf": [
+            {
+              "pattern": "^\\s*https?://[^/]"
+            },
+            {
+              "pattern": "^\\s*https?://.*\\S"
+            }
+          ]
+        }
+      }
+    },
+    "CommandProviderSettings": {
+      "description": "Checks of `command` providers: an argv template that starts with the program.",
+      "allOf": [
+        {
+          "required": [
+            "command"
+          ],
+          "properties": {
+            "command": {
+              "not": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "command": {
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "pattern": "\\S"
+            }
+          ]
+        }
+      }
+    },
+    "PiperProviderSettings": {
+      "description": "Checks of `piper` providers: a custom argv template starts with the program.",
+      "properties": {
+        "command": {
+          "minItems": 1,
+          "prefixItems": [
+            {
+              "pattern": "\\S"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,81 @@
+# SonicCraft template "voiceover-with-music": one narrator over a music bed. A cold-open hit lands
+# just before the first line, the bed ducks under the voice and stays down between sentences, and
+# the bed ends a fixed time after the last line. Streaming loudness (-14 LUFS, -1 dBTP), 256 kbps MP3,
+# subtitles plus a HyperFrames transcript.
+#
+# `source:` paths are relative to this file. `soniccraft init --template voiceover-with-music` writes
+# the timeline together with generated, royalty-free stand-ins for those assets; when you copy the file
+# by hand, put audio files at those paths (or point `source:` elsewhere, or delete the music/sfx tracks).
+# (Maintainers: hand-written; crates/soniccraft-cli/templates/ holds a byte-identical copy.)
+#
+# Needs ELEVENLABS_API_KEY. To use another provider, change `type` of the `narration` instance and
+# the narrator's `voice_id` (see reference/providers.md).
+version: "1.0"
+title: "Product voiceover"
+description: "30-second product spot: narrator, ducked music bed, cold-open hit."
+
+output:
+  path: voiceover.mp3
+  format: mp3
+  bitrate: 256k
+  loudness_preset: streaming # -14 LUFS integrated, -1.0 dBTP
+  export_subtitles: [vtt, srt, transcript]
+
+providers:
+  narration: # a custom instance name, so `type` is required
+    type: elevenlabs
+    model: eleven_multilingual_v2
+    max_concurrency: 2
+    settings:
+      stability: 0.45
+      similarity_boost: 0.8
+      style: 0.15
+
+speakers:
+  narrator:
+    provider: narration
+    voice_id: JBFqnCBsd6RMkjVDRZzb # "George", an ElevenLabs premade voice
+    label: Narrator
+
+tracks:
+  - id: bed
+    type: music
+    source: assets/audio/synthwave_loop.wav
+    loop: true
+    volume: 0.9
+    fade_in_ms: 1500
+    fade_out_ms: 3000
+    end_relative: { after_cue: line_05, offset_ms: 3000 } # fade-out starts as the last line ends
+    ducking:
+      trigger_tracks: [narration]
+      reduction_db: -14
+      attack_ms: 60
+      release_ms: 500
+      hold_ms: 600 # longer than the pauses between lines: the bed stays down instead of pumping
+
+  - id: hit
+    type: sfx
+    source: assets/sfx/impact.wav
+    start_relative: { with_cue: line_01, offset_ms: -450 } # 450 ms before the first word
+    volume: 0.8
+
+  - id: narration
+    type: speech
+    speaker: narrator
+    start_at_ms: 2000 # two seconds of music before the voice
+    sequence:
+      - id: line_01
+        text: "Meet Relay: the inbox that sorts itself."
+      - pause: 450ms
+      - id: line_02
+        text: "Relay reads every message, drafts the obvious replies, and flags the three that actually need you."
+      - pause: 350ms
+      - id: line_03
+        text: "It works with the mail account you already have, and it never sends anything without your approval."
+      - pause: 350ms
+      - id: line_04
+        text: "Set it up in two minutes. Get back an hour a day."
+      - pause: 450ms
+      - id: line_05
+        text: "Relay. Try it free at relay dot example."
+        caption: "Relay. Try it free at relay.example"

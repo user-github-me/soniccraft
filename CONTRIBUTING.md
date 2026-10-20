@@ -75,8 +75,11 @@ The scripts under `scripts/` are what CI runs besides `cargo`:
 `cargo deny check` ([cargo-deny](https://embarkstudios.github.io/cargo-deny/)) enforces the license, ban and
 source policy in `deny.toml`; CI runs it, and reports RustSec advisories in a separate, non-blocking job.
 
-If you have Claude Code installed, `claude plugin validate --strict .claude-plugin/plugin.json` and
-`claude plugin validate --strict .` check the plugin and marketplace manifests.
+The Claude Code plugin lives in `plugin/`: its manifest and icon, the MCP server config and a copy of the skill
+that `scripts/sync-plugin.sh` writes (CI checks it with `--check`). Keep everything else out of `plugin/`: the
+plugin directory is what Claude Code installs and what the plugin directory review scans. If you have Claude
+Code installed, `claude plugin validate --strict plugin` and `claude plugin validate --strict .` check the
+plugin and the marketplace manifest.
 
 ## Changing the DSL
 
@@ -88,7 +91,7 @@ A new or changed timeline field touches, in one PR:
    regenerate with `SONICCRAFT_BLESS=1 cargo test -p soniccraft-core`);
 3. DESIGN.md §2 (and §3 to §10 if behaviour changes);
 4. the skill: `skills/soniccraft/reference/dsl-reference.md`, `SKILL.md` if it is an essential rule, and
-   `diagnostics.md` for new codes;
+   `diagnostics.md` for new codes, then `scripts/sync-plugin.sh` to update the plugin's copy;
 5. examples and templates if the feature is user-facing (edit `examples/*/timeline.yaml`, then run
    `scripts/sync-templates.sh`, and copy the regenerated templates into `crates/soniccraft-cli/templates/`,
    whose byte-identical copies a test enforces).

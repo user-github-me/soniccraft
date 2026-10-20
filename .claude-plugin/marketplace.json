@@ -7,10 +7,16 @@
   "plugins": [
     {
       "name": "soniccraft",
-      "source": "./",
+      "source": "./plugin",
       "description": "Agent Skill and MCP server that compile audio timelines into mastered audio and subtitles.",
       "category": "media",
-      "tags": ["audio", "tts", "mcp", "podcast", "subtitles"]
+      "tags": [
+        "audio",
+        "tts",
+        "mcp",
+        "podcast",
+        "subtitles"
+      ]
     }
   ]
 }

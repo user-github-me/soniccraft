@@ -1,0 +1,68 @@
+# SonicCraft template "dialogue-crosstalk": two voices on separate, panned tracks with natural
+# interruptions. Turn order is explicit (relative anchors); deliberate overlaps carry
+# `allow_overlap: true`; the default `push` policy stays on as a safety net for everything else.
+#
+# Uses the local Kokoro provider (no API key, no cost). Start Kokoro-FastAPI first:
+#   docker run -p 8880:8880 ghcr.io/remsky/kokoro-fastapi-cpu:latest
+# No audio assets are needed.
+version: "1.0"
+title: "Crosstalk"
+description: "Interruptions, a backchannel and a clean hand-off between two speakers."
+
+output:
+  path: crosstalk.wav
+  format: wav
+  loudness_preset: podcast
+  export_subtitles: [vtt, srt]
+
+timing:
+  speech_overlap: push # an implicit cue that collides with earlier speech moves later
+  min_gap_ms: 200
+  overlap_tolerance_ms: 40 # overlaps this short are ignored
+
+subtitles:
+  max_chars_per_line: 38
+
+speakers:
+  ava:
+    provider: kokoro
+    voice_id: af_bella
+    label: Ava
+  ben:
+    provider: kokoro
+    voice_id: am_michael
+    label: Ben
+
+tracks:
+  - id: ava_voice
+    type: speech
+    speaker: ava
+    pan: -0.3
+    sequence:
+      - id: ava_01
+        text: "So I finally rewrote our render pipeline as a compiler."
+      - id: ava_02
+        start_relative: { after_cue: ben_01, offset_ms: 120 } # answers right after Ben's question
+        text: "Exactly that. Cues are data now, so nothing drifts and nothing collides."
+      - pause: 300ms
+      - id: ava_03
+        text: "And if two lines ever do collide, the scheduler moves the later one instead of letting them clash."
+
+  - id: ben_voice
+    type: speech
+    speaker: ben
+    pan: 0.3
+    sequence:
+      - id: ben_01
+        start_relative: { after_cue: ava_01, offset_ms: -250 } # jumps in before Ava finishes
+        allow_overlap: true
+        text: "Wait, a compiler? For audio?"
+      - id: ben_02
+        start_relative: { with_cue: ava_02, offset_ms: 1200 } # backchannel during Ava's answer
+        allow_overlap: true
+        subtitles: false
+        volume: 0.7
+        text: "Mm-hm."
+      - id: ben_03
+        start_relative: { after_cue: ava_03, offset_ms: 200 }
+        text: "Okay. That I want to hear more about."

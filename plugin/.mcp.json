@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "soniccraft": {
+      "command": "soniccraft",
+      "args": [
+        "mcp"
+      ]
+    }
+  }
+}

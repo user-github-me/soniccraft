@@ -35,7 +35,7 @@ Contents: [Document rules](#document-rules) · [Value types](#value-types) · [T
   `client_secret`, and as an annotation, `x-api-key`); a key that itself looks like a provider key; a string
   that looks like a provider key (`sk-...`, `sk_...`); and inside a `providers` entry or a `settings` map, a
   provider key anywhere in a string (after `Bearer `, in `--api-key=...`, in a URL), a bearer token, 32+ hex
-  characters, a password in a URL (`https://user:pass@host`) or a secret URL parameter (`?api_key=...`).
+  characters, a password in a URL (its `user:password@` part) or a secret URL parameter (`?api_key=...`).
   Diagnostics never repeat the secret. Put keys in environment variables and name the variable with
   `api_key_env`.
 - Booleans are `true` / `false`. YAML 1.1 words such as `yes`, `no`, `on`, `off` are not booleans.
@@ -82,7 +82,7 @@ tracks: [...]         # required, non-empty
 
 | Field | Type | Default | Semantics |
 |---|---|---|---|
-| `format` | `wav` \| `mp3` \| `flac` \| `ogg` \| `opus` \| `m4a` | from the output path extension, else `wav` | `ogg` (Vorbis), `opus` and `m4a` (AAC) need ffmpeg on PATH (`format_requires_ffmpeg`). If `format` and an explicit path extension disagree: warning `format_extension_mismatch`, `format` wins, so `-o out.mp3` on a `format: wav` timeline writes WAV data into `out.mp3`. Pass `--format mp3` (CLI) or `format: "mp3"` (MCP) to override `format` too. |
+| `format` | `wav` \| `mp3` \| `flac` \| `ogg` \| `opus` \| `m4a` | from the output path extension, else `wav` | `ogg` (Vorbis), `opus` and `m4a` (AAC) need ffmpeg on PATH (`format_requires_ffmpeg`). If `format` and an explicit path extension disagree: warning `format_extension_mismatch`, `format` wins, so `-o out.mp3` on a `format: wav` timeline writes WAV data into `out.mp3`. Add `--format mp3` (CLI) or `format: "mp3"` (MCP) to override `format` too. |
 | `path` | string | `<timeline file stem>.<ext>` next to the timeline | Relative to the timeline directory. CLI `-o` and MCP `output_path` override it. An existing file is only replaced by an output of its kind (an audio file by audio, side files only if they are files): `-o notes.txt` over an existing `notes.txt` is `invalid_value` ("refusing to overwrite"). Over MCP, the timeline's own `output.path` must stay inside the base directory (an `output_path` argument may point anywhere). |
 | `sample_rate` | integer | `48000` | 8000 to 192000. mp3 allows only 8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000 (`unsupported_sample_rate`). opus is always encoded at 48000. |
 | `channels` | `1` \| `2` | `2` | Mono output downmixes stereo sources `(L + R) / 2` and ignores pan. |

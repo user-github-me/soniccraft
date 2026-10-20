@@ -202,6 +202,6 @@ Anchor effects to the speech they belong to, never to guessed absolute times:
   encoded natively. `ogg` (Vorbis), `opus` (always 48 kHz) and `m4a` (AAC) need ffmpeg on PATH. Format names
   are exact lowercase (`format: mp3`, not `MP3`).
 - The `output.format` of the timeline beats the extension of `-o`: to render a `format: wav` timeline to
-  MP3, pass `-o out.mp3 --format mp3` (MCP: `output_path` plus `format: "mp3"`).
+  MP3, use `-o out.mp3 --format mp3` (MCP: `output_path` plus `format: "mp3"`).
 - 16-bit output gets fixed-seed TPDF dither (`dither: true`); 24-bit is rounded.
 - For further editing or video: `wav` 24-bit at 48 kHz. For distribution: `mp3` 192 to 320 kbps.

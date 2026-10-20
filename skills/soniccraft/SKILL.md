@@ -22,10 +22,13 @@ graphs or guessed `adelay` offsets: write a timeline and let SonicCraft do the g
 Check the binary first: `soniccraft --version`. If the command is not found, tell the user how to install
 it, then continue:
 
-- From a clone of the repository (Rust 1.89+ and a C toolchain): `cargo install --locked --path
-  crates/soniccraft-cli` (installs `soniccraft` and `soniccraft-mcp` into `~/.cargo/bin`).
+- Homebrew (macOS, Linux): `brew install user-github-me/soniccraft/soniccraft`. Windows: the project's Scoop
+  bucket (`scoop install soniccraft`, see the README).
+- With Rust 1.89+ and a C toolchain: `cargo install --locked soniccraft` (installs `soniccraft` and
+  `soniccraft-mcp` into `~/.cargo/bin`).
 - A prebuilt archive from the project's GitHub releases (`soniccraft-v<version>-<target>.tar.gz`, `.zip` on
-  Windows; check it against `SHA256SUMS`), with `soniccraft` and `soniccraft-mcp` put on PATH.
+  Windows; check it against `SHA256SUMS`), with `soniccraft` and `soniccraft-mcp` put on PATH. The README's
+  one-line installers do exactly this.
 - For the MCP server only, without Rust: `npx -y soniccraft-mcp` (Node.js 20+) downloads the release binary
   on first use.
 
@@ -81,9 +84,9 @@ If the SonicCraft MCP server is connected, use its tools instead of the CLI (sam
 | `soniccraft_list_voices` | `provider` |
 
 An invalid timeline is a successful validate/dry-run call with `valid: false`; a failed render or a bad
-argument returns `isError: true` with what to fix. Pass absolute paths or `base_dir`; pass `format` with an
-`output_path` whose extension differs from the timeline's format. Long timelines return a compact report
-(`items_truncated: true`); pass `detail: "full"` for every item. Timelines with `command` providers need the
+argument returns `isError: true` with what to fix. Use absolute paths or `base_dir`; give `format` too when an
+`output_path` has an extension other than the timeline's format. Long timelines return a compact report
+(`items_truncated: true`); `detail: "full"` lists every item. Timelines with `command` providers need the
 server started with `--allow-command`.
 
 ## Minimal timeline

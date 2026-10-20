@@ -233,10 +233,12 @@ jobs:
         run: python3 scripts/check-docs.py
       - name: Skill templates are in sync with the examples
         run: scripts/sync-templates.sh --check
+      - name: The plugin's copy of the skill is in sync
+        run: scripts/sync-plugin.sh --check
       - name: Example assets (format, length, level, size budget)
         run: scripts/generate-example-assets.sh --verify
       - name: Plugin and MCP manifests are valid JSON
         run: |
-          for f in .claude-plugin/plugin.json .claude-plugin/marketplace.json .cursor-plugin/plugin.json .mcp.json server.json; do
+          for f in .claude-plugin/marketplace.json plugin/.claude-plugin/plugin.json plugin/.mcp.json .cursor-plugin/plugin.json .mcp.json server.json; do
             jq empty "$f"
           done
