@@ -16,8 +16,7 @@ server and an Agent Skill.
 [![CI](https://github.com/user-github-me/soniccraft/actions/workflows/ci.yml/badge.svg)](https://github.com/user-github-me/soniccraft/actions/workflows/ci.yml)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
 [![crates.io](https://img.shields.io/crates/v/soniccraft.svg)](https://crates.io/crates/soniccraft)
-
-[![SonicCraft MCP server](https://mcprush.com/badge/soniccraft-mcp/card.svg)](https://mcprush.com/to/soniccraft-mcp?ref=badge)
+[![SonicCraft MCP on mcprush](https://mcprush.com/badge/soniccraft-mcp/score.svg)](https://mcprush.com/to/soniccraft-mcp?ref=badge)
 
 **[Website](https://user-github-me.github.io/soniccraft/)** · [Quickstart](#quickstart) ·
 [Use it from an AI agent](#use-it-from-an-ai-agent) · [MCP server](#mcp-server) · [Agent Skill](#agent-skill)
