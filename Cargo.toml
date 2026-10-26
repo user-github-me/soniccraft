@@ -45,7 +45,7 @@ tokio = { version = "1.53.3", features = ["rt-multi-thread", "macros", "process"
 futures = "0.3.34"
 reqwest = { version = "0.13.5", default-features = false, features = ["rustls", "http2", "json", "query", "stream"] }
 bytes = "1.11"
-rmcp = { version = "=3.5.1", features = ["server", "transport-io", "macros"] }
+rmcp = { version = "=3.7.0", features = ["server", "transport-io", "macros"] }
 
 # misc
 blake3 = "1.8.7"
