@@ -62,7 +62,7 @@ tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
 
 # dev
 tempfile = "3.27.0"
-jsonschema = { version = "0.59.0", default-features = false }
+jsonschema = { version = "0.60.0", default-features = false }
 
 [profile.release]
 lto = "thin"
